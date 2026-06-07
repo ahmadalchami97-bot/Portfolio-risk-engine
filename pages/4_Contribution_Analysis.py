@@ -100,7 +100,7 @@ if active_contribs:
         ),
         yaxis=dict(title=""),
     )
-    st.plotly_chart(fig_t, use_container_width=True)
+    st.plotly_chart(fig_t, width="stretch")
 else:
     st.info("No material factor contributions to display.")
 
@@ -143,7 +143,7 @@ if active_contribs:
             "Share of Total Return (%)":  "{:+.1f}%",
         }, na_rep="—")
     )
-    st.dataframe(styled_c, use_container_width=True, hide_index=True)
+    st.dataframe(styled_c, width="stretch", hide_index=True)
 
 st.divider()
 
@@ -193,7 +193,7 @@ if heatmap_matrix.size > 0:
         xaxis=dict(title="Macro Factor", tickangle=-20),
         yaxis=dict(title="Asset"),
     )
-    st.plotly_chart(fig_hm, use_container_width=True)
+    st.plotly_chart(fig_hm, width="stretch")
 
 st.divider()
 
@@ -231,7 +231,7 @@ if len(st.session_state.portfolio) > 0 and active_factor_names:
         ),
         legend=dict(title="Macro Factor", orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    st.plotly_chart(fig_s, use_container_width=True)
+    st.plotly_chart(fig_s, width="stretch")
     st.divider()
 
 # ── 5. Narrative Summary ───────────────────────────────────────────────────────

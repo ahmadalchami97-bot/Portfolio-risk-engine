@@ -107,7 +107,7 @@ for asset_name, template in ASSET_TEMPLATES.items():
         return "color:#64748b"
 
     styled = df.style.map(_color_beta, subset=["Beta"]).format({"Beta": "{:+.1f}"})
-    st.dataframe(styled, use_container_width=True, hide_index=True)
+    st.dataframe(styled, width="stretch", hide_index=True)
     st.markdown("")
 
 st.divider()
@@ -150,7 +150,7 @@ fig_hm.update_layout(
     xaxis=dict(title="Macro Factor", tickangle=-15),
     yaxis=dict(title=""),
 )
-st.plotly_chart(fig_hm, use_container_width=True)
+st.plotly_chart(fig_hm, width="stretch")
 
 st.divider()
 

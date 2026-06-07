@@ -121,7 +121,7 @@ styled = (
         "Ending Value ($)": "${:,.0f}",
     }, na_rep="—")
 )
-st.dataframe(styled, use_container_width=True, hide_index=True)
+st.dataframe(styled, width="stretch", hide_index=True)
 
 st.divider()
 
@@ -155,7 +155,7 @@ with col_returns:
         yaxis=dict(title=""),
         showlegend=False,
     )
-    st.plotly_chart(fig_r, use_container_width=True)
+    st.plotly_chart(fig_r, width="stretch")
 
 # P&L waterfall chart
 with col_waterfall:
@@ -185,7 +185,7 @@ with col_waterfall:
         ),
         showlegend=False,
     )
-    st.plotly_chart(fig_wf, use_container_width=True)
+    st.plotly_chart(fig_wf, width="stretch")
 
 st.divider()
 

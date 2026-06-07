@@ -141,7 +141,7 @@ st.divider()
 col_reset, col_next = st.columns([1, 2])
 
 with col_reset:
-    if st.button("🔄 Reset All to Zero", use_container_width=True):
+    if st.button("🔄 Reset All to Zero", width="stretch"):
         for f in FACTORS:
             st.session_state.scenario[f] = 0.0
             st.session_state[f"slider_{f}"] = 0.0

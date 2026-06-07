@@ -47,14 +47,16 @@ with st.form("add_asset_form", clear_on_submit=True):
         )
 
     with col_amt:
+        # No max_value cap → supports institutional-sized positions (millions to billions).
         amount = st.number_input(
             "Amount Invested ($)",
-            min_value=1_000,
-            max_value=100_000_000,
-            value=100_000,
-            step=10_000,
+            min_value=0,
+            value=1_000_000,
+            step=100_000,
             format="%d",
+            help="Enter the dollar value of this position. Supports institutional sizes — e.g. 250,000,000.",
         )
+        st.caption(f"💵 Amount entered: **${amount:,.0f}**")
 
     tmpl = ASSET_TEMPLATES[template_choice]
     st.markdown(
@@ -62,7 +64,7 @@ with st.form("add_asset_form", clear_on_submit=True):
         f"Asset class: `{tmpl['asset_class']}`"
     )
 
-    if st.form_submit_button("➕ Add to Portfolio", use_container_width=True, type="primary"):
+    if st.form_submit_button("➕ Add to Portfolio", width="stretch", type="primary"):
         display_name = custom_name.strip() or template_choice
         st.session_state.portfolio.append({
             "id": len(st.session_state.portfolio),  # stable unique id
@@ -96,7 +98,8 @@ else:
 
     st.markdown("")
 
-    # Holdings table
+    # Holdings table — Amount pre-formatted as a comma string for reliable
+    # thousands separators regardless of Streamlit version.
     rows = []
     for i, a in enumerate(portfolio):
         rows.append({
@@ -104,17 +107,17 @@ else:
             "Asset": f"{a['icon']} {a['name']}",
             "Template": a["template"],
             "Class": a["asset_class"],
-            "Amount ($)": a["amount"],
+            "Amount ($)": f"${a['amount']:,.0f}",
             "Weight": round(a["amount"] / total_invested * 100, 1),
         })
 
     df = pd.DataFrame(rows)
     st.dataframe(
         df,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
-            "Amount ($)": st.column_config.NumberColumn(format="$%d"),
+            "Amount ($)": st.column_config.TextColumn(label="Amount ($)"),
             "Weight": st.column_config.ProgressColumn(
                 label="Weight (%)",
                 min_value=0,
@@ -145,7 +148,7 @@ else:
         )
         layout = {**CHART_LAYOUT, "showlegend": False, "height": 340}
         fig_pie.update_layout(**layout)
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width="stretch")
 
     with col_bar:
         st.subheader("Amount by Asset")
@@ -164,7 +167,7 @@ else:
             yaxis=dict(showgrid=True, gridcolor=BORDER),
             bargap=0.35,
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width="stretch")
 
     st.divider()
 
@@ -197,7 +200,7 @@ else:
     styled_beta = beta_df.style.map(color_beta, subset=factor_cols).format(
         {c: "{:+.1f}" for c in factor_cols}
     )
-    st.dataframe(styled_beta, use_container_width=True, hide_index=True)
+    st.dataframe(styled_beta, width="stretch", hide_index=True)
 
     st.divider()
 
@@ -210,14 +213,14 @@ else:
 
     col_rm, col_clr = st.columns([1, 1])
     with col_rm:
-        if st.button("🗑️ Remove Selected", use_container_width=True):
+        if st.button("🗑️ Remove Selected", width="stretch"):
             # Index-based removal avoids duplicate-name bug
             st.session_state.portfolio = [
                 a for i, a in enumerate(st.session_state.portfolio) if i != selected_idx
             ]
             st.rerun()
     with col_clr:
-        if st.button("❌ Clear Portfolio", use_container_width=True):
+        if st.button("❌ Clear Portfolio", width="stretch"):
             st.session_state.portfolio = []
             st.rerun()
 
