@@ -150,9 +150,12 @@ st.divider()
 # ── 3. Asset × Factor heatmap ──────────────────────────────────────────────────
 
 st.subheader("Asset × Factor Contribution Heatmap")
-st.caption(
-    "Each cell = contribution (%) of one factor to one asset's return. "
-    "Green = positive, Red = negative."
+st.markdown(
+    "Each box shows how much one macro factor helped or hurt one asset.\n\n"
+    "**Green = helped performance.**  \n"
+    "**Red = hurt performance.**\n\n"
+    "**Example:** If the Gold / DXY box shows **+4%**, it means changes in the "
+    "US Dollar added about 4% to Gold's return under this scenario."
 )
 
 asset_names = results_df["Asset"].tolist()

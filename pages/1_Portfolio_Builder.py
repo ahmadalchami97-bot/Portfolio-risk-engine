@@ -174,9 +174,16 @@ else:
     # ── Factor sensitivity table ────────────────────────────────────────────────
 
     st.subheader("Factor Sensitivities (Betas)")
-    st.caption(
-        "Beta = estimated % return of the asset per 1-unit macro shock. "
-        "Negative = asset falls when the factor rises. These are assumed values, not statistically estimated."
+    st.markdown(
+        "Each number below is an assumed sensitivity coefficient.\n\n"
+        "**Example:**\n"
+        "- Gold Inflation = **+3.0** means if Inflation rises by 1.0 percentage point, "
+        "Gold is assumed to rise by approximately 3.0%.\n"
+        "- Gold Fed Funds = **-2.0** means if Fed Funds rises by 1.0 percentage point, "
+        "Gold is assumed to fall by approximately 2.0%.\n\n"
+        "**Positive** values mean the asset tends to move in the **same** direction as the factor.  \n"
+        "**Negative** values mean the asset tends to move in the **opposite** direction.\n\n"
+        "_These are model assumptions and are not statistically estimated from historical data._"
     )
 
     beta_rows = []

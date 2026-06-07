@@ -2,7 +2,7 @@
 Asset templates with pre-calibrated factor betas.
 
 Beta interpretation: % return of asset per 1 unit of factor shock.
-  - Rate factors (Fed Funds Rate, US 10Y Yield, Inflation, GDP Growth):
+  - Rate factors (Fed Funds Rate, US 10Y Yield, Inflation):
       1 unit = 1 percentage point (pp). e.g. Fed hikes 1pp → +100bps.
   - Market factors (DXY, Oil Price):
       1 unit = 1% change. e.g. DXY +5 → dollar up 5%.
@@ -22,7 +22,6 @@ ASSET_TEMPLATES = {
             "Fed Funds Rate": -2.0,
             "US 10Y Yield":   -3.0,
             "Inflation":       3.0,   # reduced from 5.0 — empirical CPI sensitivity is moderate
-            "GDP Growth":     -1.0,
             "DXY":            -0.8,
             "Oil Price":       0.3,
         },
@@ -35,7 +34,6 @@ ASSET_TEMPLATES = {
             "Fed Funds Rate": -3.0,
             "US 10Y Yield":   -2.0,
             "Inflation":      -1.5,
-            "GDP Growth":      4.0,
             "DXY":            -0.3,
             "Oil Price":       0.2,
         },
@@ -48,7 +46,6 @@ ASSET_TEMPLATES = {
             "Fed Funds Rate": -5.0,
             "US 10Y Yield":   -8.0,   # compressed vs true duration (~16y) to avoid double-counting
             "Inflation":      -3.0,
-            "GDP Growth":     -0.5,   # reduced from -1.0 — GDP→bond link is indirect
             "DXY":             0.1,
             "Oil Price":      -0.1,
         },
@@ -61,7 +58,6 @@ ASSET_TEMPLATES = {
             "Fed Funds Rate": -1.5,
             "US 10Y Yield":   -3.0,
             "Inflation":       2.0,
-            "GDP Growth":      2.0,
             "DXY":            -0.5,   # CHF/USD exposure: USD strengthens → CHF assets worth less in USD
             "Oil Price":       0.0,
         },
@@ -91,12 +87,6 @@ BETA_RATIONALE = {
             "Gold is widely cited as an inflation hedge, but empirical evidence is mixed. "
             "It performed well in the 1970s and 2020–2022 but near-zero sensitivity in 2010s. "
             "Beta of +3.0 reflects a moderate assumption.",
-        ),
-        "GDP Growth": (
-            "✅ Correct",
-            "Small — directional only",
-            "Strong growth reduces safe-haven demand for gold. "
-            "Small magnitude reflects the weak and inconsistent empirical relationship.",
         ),
         "DXY": (
             "✅ Correct",
@@ -131,13 +121,6 @@ BETA_RATIONALE = {
             "Demand-pull inflation can be equity-positive; cost-push inflation and "
             "Fed reaction risk are equity-negative. Net assumption: moderately negative.",
         ),
-        "GDP Growth": (
-            "✅ Correct",
-            "High — reflects operating leverage amplification",
-            "Corporate earnings grow faster than GDP due to operating and financial leverage. "
-            "A 1pp GDP acceleration typically translates to 3–5% earnings growth. "
-            "+4.0 is at the higher end of consensus but defensible.",
-        ),
         "DXY": (
             "✅ Correct",
             "Small — S&P 500 has ~40% international revenue",
@@ -171,12 +154,6 @@ BETA_RATIONALE = {
             "Fixed nominal coupon payments are worth less in real terms. "
             "Inflation also triggers Fed action which raises nominal yields further.",
         ),
-        "GDP Growth": (
-            "✅ Correct",
-            "Small — GDP→bond link is indirect, via rate expectations",
-            "Strong growth → higher rates expected → yields rise → bond prices fall. "
-            "But safe-haven flows during weak growth can offset. Small negative is appropriate.",
-        ),
         "DXY": (
             "✅ Correct",
             "Near-zero — minor safe-haven correlation",
@@ -209,12 +186,6 @@ BETA_RATIONALE = {
             "Swiss commercial and residential leases frequently include CPI escalators. "
             "Real asset with good inflation pass-through.",
         ),
-        "GDP Growth": (
-            "✅ Correct",
-            "Moderate — occupancy and rent growth are GDP-sensitive",
-            "Economic growth supports office/retail occupancy, residential demand, "
-            "and transaction volumes.",
-        ),
         "DXY": (
             "✅ Correct",
             "Small negative — currency translation for USD-based investor",
@@ -236,8 +207,8 @@ FACTORS = {
         "label": "Fed Funds Rate",
         "description": "Federal Reserve policy rate change",
         "example": "+1.0 pp = Fed hikes 100bps",
-        "min": -3.0,
-        "max":  3.0,
+        "min": -2.0,
+        "max":  2.0,
         "step": 0.25,
         "baseline": 5.25,
         "baseline_label": "5.25%",
@@ -248,8 +219,8 @@ FACTORS = {
         "label": "US 10Y Yield",
         "description": "10-Year US Treasury yield change",
         "example": "+0.5 pp = 10Y rises 50bps",
-        "min": -3.0,
-        "max":  3.0,
+        "min": -2.0,
+        "max":  2.0,
         "step": 0.25,
         "baseline": 4.30,
         "baseline_label": "4.30%",
@@ -260,33 +231,23 @@ FACTORS = {
         "label": "Inflation (CPI)",
         "description": "Annual CPI inflation change",
         "example": "+1.0 pp = inflation rises from 3% to 4%",
-        "min": -3.0,
-        "max":  5.0,
+        "min": -2.0,
+        "max":  2.0,
         "step": 0.25,
         "baseline": 3.20,
         "baseline_label": "3.2%",
         "icon": "🔥",
-    },
-    "GDP Growth": {
-        "unit": "pp",
-        "label": "GDP Growth",
-        "description": "Annual GDP growth change",
-        "example": "-1.0 pp = growth slows by 1 percentage point",
-        "min": -5.0,
-        "max":  3.0,
-        "step": 0.25,
-        "baseline": 2.10,
-        "baseline_label": "2.1%",
-        "icon": "📊",
     },
     "DXY": {
         "unit": "%",
         "label": "DXY (US Dollar Index)",
         "description": "Percentage change in US Dollar Index",
         "example": "+5.0% = dollar strengthens 5%",
-        "min": -20.0,
-        "max":  20.0,
-        "step":  1.0,
+        "min": -5.0,          # normal mode
+        "max":  5.0,
+        "min_stress": -15.0,  # stress testing mode
+        "max_stress":  15.0,
+        "step":  0.5,
         "baseline": 104.2,
         "baseline_label": "104.2",
         "icon": "💵",
@@ -295,10 +256,12 @@ FACTORS = {
         "unit": "%",
         "label": "Oil Price (WTI)",
         "description": "Percentage change in WTI crude oil",
-        "example": "+20.0% = oil rises 20%",
-        "min": -50.0,
-        "max":  50.0,
-        "step":  5.0,
+        "example": "+15.0% = oil rises 15%",
+        "min": -5.0,          # normal mode
+        "max":  5.0,
+        "min_stress": -25.0,  # stress testing mode
+        "max_stress":  25.0,
+        "step":  1.0,
         "baseline": 78.5,
         "baseline_label": "$78.5/bbl",
         "icon": "🛢️",
@@ -307,59 +270,64 @@ FACTORS = {
 
 PREBUILT_SCENARIOS = {
     "— Select a template —": None,
-    "🏦 Fed Aggressive Hike Cycle": {
-        "description": "Fed raises rates sharply to contain persistent inflation. Bonds and rate-sensitive assets suffer.",
-        "shocks": {
-            "Fed Funds Rate":  2.00,
-            "US 10Y Yield":    1.50,
-            "Inflation":      -0.50,
-            "GDP Growth":     -1.00,
-            "DXY":             5.00,
-            "Oil Price":     -10.00,
-        },
-    },
-    "📉 Stagflation Shock": {
-        "description": "High inflation combined with weak growth (1970s-style). Most asset classes suffer simultaneously.",
+    "🏦 Fed Hiking Cycle": {
+        "description": "The Fed raises rates to cool the economy. Yields rise, the dollar strengthens, and rate-sensitive assets come under pressure.",
         "shocks": {
             "Fed Funds Rate":  1.00,
-            "US 10Y Yield":    2.00,
-            "Inflation":       4.00,
-            "GDP Growth":     -2.00,
-            "DXY":            -5.00,
-            "Oil Price":      40.00,
-        },
-    },
-    "🌧️ Recession & Risk-Off": {
-        "description": "Economic contraction. Equities fall, Treasuries rally, Fed cuts rates aggressively.",
-        "shocks": {
-            "Fed Funds Rate": -1.50,
-            "US 10Y Yield":   -1.00,
-            "Inflation":      -1.00,
-            "GDP Growth":     -3.00,
-            "DXY":             2.00,
-            "Oil Price":     -30.00,
-        },
-    },
-    "🚀 Strong Growth Rally": {
-        "description": "Goldilocks economy. Strong growth, moderate inflation. Equities outperform.",
-        "shocks": {
-            "Fed Funds Rate":  0.25,
             "US 10Y Yield":    0.50,
-            "Inflation":       0.50,
-            "GDP Growth":      1.50,
+            "Inflation":       0.25,
+            "DXY":             2.00,
+            "Oil Price":       0.00,
+        },
+    },
+    "📉 Fed Cutting Cycle": {
+        "description": "The Fed eases policy to support growth. Yields fall, the dollar weakens, and rate-sensitive assets benefit.",
+        "shocks": {
+            "Fed Funds Rate": -1.00,
+            "US 10Y Yield":   -0.50,
+            "Inflation":      -0.25,
             "DXY":            -2.00,
+            "Oil Price":       0.00,
+        },
+    },
+    "💪 Strong Dollar": {
+        "description": "A broad US dollar rally. Non-USD and dollar-priced commodity assets face translation headwinds.",
+        "shocks": {
+            "Fed Funds Rate":  0.00,
+            "US 10Y Yield":    0.25,
+            "Inflation":       0.00,
+            "DXY":             5.00,
+            "Oil Price":      -2.00,
+        },
+    },
+    "🪙 Weak Dollar": {
+        "description": "A broad US dollar decline. Commodities and non-USD assets are supported.",
+        "shocks": {
+            "Fed Funds Rate":  0.00,
+            "US 10Y Yield":   -0.25,
+            "Inflation":       0.00,
+            "DXY":            -5.00,
+            "Oil Price":       2.00,
+        },
+    },
+    "🛢️ Oil Shock": {
+        "description": "A sharp spike in crude oil prices feeds into inflation. Requires Stress Mode for the full oil move.",
+        "shocks": {
+            "Fed Funds Rate":  0.00,
+            "US 10Y Yield":    0.25,
+            "Inflation":       1.00,
+            "DXY":            -1.00,
             "Oil Price":      15.00,
         },
     },
-    "💵 Dollar Collapse": {
-        "description": "Sharp USD depreciation. Commodities and non-USD assets surge.",
+    "🌧️ Risk-Off Flight To Safety": {
+        "description": "Markets sell off and capital flows to safe havens. Yields fall, the dollar firms, and oil declines on growth fears.",
         "shocks": {
-            "Fed Funds Rate": -1.00,
-            "US 10Y Yield":    0.50,
-            "Inflation":       2.00,
-            "GDP Growth":     -0.50,
-            "DXY":           -15.00,
-            "Oil Price":      25.00,
+            "Fed Funds Rate": -0.50,
+            "US 10Y Yield":   -0.75,
+            "Inflation":      -0.50,
+            "DXY":             2.00,
+            "Oil Price":      -3.00,
         },
     },
 }

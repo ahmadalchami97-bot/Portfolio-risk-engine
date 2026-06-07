@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.templates import FACTORS
 from src.factor_model import compute_results
-from src.ui import apply_theme, POS, NEG, ACC, BORDER, LIGHT, CHART_LAYOUT
+from src.ui import apply_theme, POS, NEG, ACC, NEU, BORDER, LIGHT, CHART_LAYOUT, sign_color, sign_arrow, kpi_card
 
 st.set_page_config(page_title="Results Dashboard", page_icon="📈", layout="wide")
 apply_theme()
@@ -61,22 +61,45 @@ is_gain          = total_pnl >= 0
 st.subheader("Portfolio Summary")
 
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Total Invested",  f"${total_invested:,.0f}")
-k2.metric(
-    "Ending Value",
-    f"${ending_value:,.0f}",
-    delta=f"${total_pnl:+,.0f}",
-    delta_color="normal",
+
+# Total Invested — neutral (not a gain/loss figure)
+k1.markdown(
+    kpi_card("Total Invested", f"${total_invested:,.0f}", color=ACC),
+    unsafe_allow_html=True,
 )
-k3.metric(
-    "Portfolio Return",
-    f"{total_return_pct:+.2f}%",
-    delta_color="off",
+
+# Ending Value — value neutral, with a colour-coded P&L delta below it
+pnl_color = sign_color(total_pnl)
+pnl_arrow = sign_arrow(total_pnl)
+k2.markdown(
+    kpi_card(
+        "Ending Value",
+        f"${ending_value:,.0f}",
+        color=ACC,
+        sublabel=f"<span style='color:{pnl_color};font-weight:600;'>"
+                 f"{pnl_arrow} ${total_pnl:+,.0f}</span>",
+    ),
+    unsafe_allow_html=True,
 )
-k4.metric(
-    "Portfolio P&L",
-    f"${total_pnl:+,.0f}",
-    delta_color="off",
+
+# Portfolio Return — green positive, red negative, grey zero
+k3.markdown(
+    kpi_card(
+        "Portfolio Return",
+        f"{sign_arrow(total_return_pct)} {total_return_pct:+.2f}%",
+        color=sign_color(total_return_pct),
+    ),
+    unsafe_allow_html=True,
+)
+
+# Portfolio P&L — green positive, red negative, grey zero
+k4.markdown(
+    kpi_card(
+        "Portfolio P&L",
+        f"{sign_arrow(total_pnl)} ${total_pnl:+,.0f}",
+        color=sign_color(total_pnl),
+    ),
+    unsafe_allow_html=True,
 )
 
 st.divider()
