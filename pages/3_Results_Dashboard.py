@@ -116,7 +116,7 @@ def color_return(val):
             return "color: #d62728; font-weight: bold"
     return ""
 
-styled = display_df.style.applymap(
+styled = display_df.style.map(
     color_return, subset=["Return (%)", "P&L ($)"]
 ).format(
     {

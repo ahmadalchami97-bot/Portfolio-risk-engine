@@ -135,7 +135,7 @@ if active_factor_contribs:
                 return "color: #d62728; font-weight: bold"
         return ""
 
-    styled_contrib = contrib_df.style.applymap(
+    styled_contrib = contrib_df.style.map(
         color_contrib, subset=["Contribution (%)", "Share of Total Return (%)"]
     ).format(
         {
