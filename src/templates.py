@@ -210,8 +210,8 @@ FACTORS = {
         "min": -2.0,
         "max":  2.0,
         "step": 0.25,
-        "baseline": 5.25,
-        "baseline_label": "5.25%",
+        "baseline": 4.50,
+        "baseline_label": "4.50%",
         "icon": "🏦",
     },
     "US 10Y Yield": {
@@ -222,8 +222,8 @@ FACTORS = {
         "min": -2.0,
         "max":  2.0,
         "step": 0.25,
-        "baseline": 4.30,
-        "baseline_label": "4.30%",
+        "baseline": 4.45,
+        "baseline_label": "4.45%",
         "icon": "📜",
     },
     "Inflation": {
@@ -234,8 +234,8 @@ FACTORS = {
         "min": -2.0,
         "max":  2.0,
         "step": 0.25,
-        "baseline": 3.20,
-        "baseline_label": "3.2%",
+        "baseline": 2.80,
+        "baseline_label": "2.8%",
         "icon": "🔥",
     },
     "DXY": {
@@ -248,8 +248,8 @@ FACTORS = {
         "min_stress": -15.0,  # stress testing mode
         "max_stress":  15.0,
         "step":  0.5,
-        "baseline": 104.2,
-        "baseline_label": "104.2",
+        "baseline": 99.0,
+        "baseline_label": "99.0",
         "icon": "💵",
     },
     "Oil Price": {
@@ -262,8 +262,8 @@ FACTORS = {
         "min_stress": -25.0,  # stress testing mode
         "max_stress":  25.0,
         "step":  1.0,
-        "baseline": 78.5,
-        "baseline_label": "$78.5/bbl",
+        "baseline": 65.0,
+        "baseline_label": "$65.0/bbl",
         "icon": "🛢️",
     },
 }

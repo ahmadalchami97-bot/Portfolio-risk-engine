@@ -59,10 +59,7 @@ active_contribs = {f: v for f, v in factor_contribs.items() if abs(v) > 0.0001}
 # ── 1. Tornado Chart ───────────────────────────────────────────────────────────
 
 st.subheader("Tornado Chart — Factor Contributions to Portfolio Return")
-st.caption(
-    "Each bar is one macro factor's weighted contribution to the total portfolio return. "
-    "Sorted by absolute magnitude."
-)
+st.caption("This chart shows which macro factors helped or hurt the portfolio the most.")
 
 if active_contribs:
     tornado_df = pd.DataFrame([
@@ -112,16 +109,17 @@ st.subheader("Factor Contribution Breakdown")
 
 if active_contribs:
     total_return = summary["total_return_pct"]
+    total_invested = summary["total_invested"]
     rows = []
     for factor, contrib in sorted(active_contribs.items(), key=lambda x: abs(x[1]), reverse=True):
         cfg   = FACTORS[factor]
         shock = st.session_state.scenario[factor]
-        share = (contrib / total_return * 100) if abs(total_return) > 0.0001 else 0
+        pnl_contribution = contrib / 100.0 * total_invested
         rows.append({
-            "Factor":                   f"{cfg['icon']} {cfg['label']}",
-            "Shock":                    f"{'+' if shock >= 0 else ''}{shock} {cfg['unit']}",
+            "Factor":                     f"{cfg['icon']} {cfg['label']}",
+            "Shock":                      f"{'+' if shock >= 0 else ''}{shock} {cfg['unit']}",
             "Portfolio Contribution (%)": round(contrib, 4),
-            "Share of Total Return (%)":  round(share, 1),
+            "P&L Contribution ($)":       pnl_contribution,
         })
 
     cdf = pd.DataFrame(rows)
@@ -135,12 +133,20 @@ if active_contribs:
             pass
         return ""
 
+    def _fmt_pnl(val):
+        try:
+            f = float(val)
+            sign = "+" if f >= 0 else "-"
+            return f"{sign}${abs(f):,.0f}"
+        except (TypeError, ValueError):
+            return "—"
+
     styled_c = (
         cdf.style
-        .map(_color, subset=["Portfolio Contribution (%)", "Share of Total Return (%)"])
+        .map(_color, subset=["Portfolio Contribution (%)", "P&L Contribution ($)"])
         .format({
             "Portfolio Contribution (%)": "{:+.4f}%",
-            "Share of Total Return (%)":  "{:+.1f}%",
+            "P&L Contribution ($)":       _fmt_pnl,
         }, na_rep="—")
     )
     st.dataframe(styled_c, width="stretch", hide_index=True)
@@ -240,7 +246,6 @@ if len(st.session_state.portfolio) > 0 and active_factor_names:
 # ── 5. Narrative Summary ───────────────────────────────────────────────────────
 
 st.subheader("Narrative Summary")
-st.caption("Auto-generated plain-English explanation of the scenario outcome.")
 
 narrative = generate_narrative(
     portfolio_summary=summary,

@@ -46,7 +46,7 @@ with c2:
     st.markdown("### Step 2")
     st.markdown("**⚙️ Scenario Builder**")
     st.markdown(
-        "Set shocks to six macro factors: Fed Funds Rate, US 10Y Yield, Inflation, "
+        "Set shocks to five macro factors: Fed Funds Rate, US 10Y Yield, Inflation, "
         "DXY, and Oil Price. Or load a pre-built scenario template."
     )
     st.page_link("pages/2_Scenario_Builder.py", label="Open Scenario Builder →")
@@ -96,37 +96,26 @@ st.divider()
 
 # ── Model summary ──────────────────────────────────────────────────────────────
 
-st.subheader("How It Works")
+st.subheader("How the Analysis Works")
 
 col_model, col_warn = st.columns([3, 2])
 
 with col_model:
-    st.markdown("""
-**Factor Sensitivity Model**
-
-Each asset has pre-defined *factor betas* — sensitivity coefficients that
-describe how the asset is expected to respond to each macro variable.
-
-> **Return (%) = Σ ( Beta_k × Shock_k )**
-
-Where shock is in natural units: percentage points (pp) for rate factors,
-percent change (%) for DXY and Oil.
-
-**Portfolio return** is the investment-weighted average of asset returns.
-
-Four asset templates are available, each with five factor betas:
-
-| Template | Fed Funds | US 10Y | Inflation | DXY | Oil |
-|---|---|---|---|---|---|
-| 🥇 Gold | −2.0 | −3.0 | +3.0 | −0.8 | +0.3 |
-| 📈 US Equities | −3.0 | −2.0 | −1.5 | −0.3 | +0.2 |
-| 🏛️ US Treasuries | −5.0 | −8.0 | −3.0 | +0.1 | −0.1 |
-| 🏠 Swiss RE | −1.5 | −3.0 | +2.0 | −0.5 | 0.0 |
-""")
+    st.markdown(
+        "This tool estimates how a portfolio may react to changes in key macroeconomic "
+        "variables such as interest rates, inflation, the US dollar, and oil prices. "
+        "Each asset class is assigned a set of economic sensitivities based on typical "
+        "market behaviour. For example:\n\n"
+        "- Gold generally benefits from higher inflation and a weaker US dollar.\n"
+        "- Equities typically benefit from lower interest rates.\n"
+        "- Long-duration bonds are usually sensitive to changes in yields.\n"
+        "- Real estate can be affected by both interest rates and inflation.\n\n"
+        "The analysis should be viewed as a scenario-planning tool rather than a forecast."
+    )
 
 with col_warn:
     st.warning(
-        "**Important:** All factor betas are **assumption-based**, "
+        "**Important:** All factor sensitivities are **assumption-based**, "
         "not statistically estimated from historical data. "
         "Results are directional estimates for analytical discussion — "
         "not investment advice or precise forecasts.\n\n"

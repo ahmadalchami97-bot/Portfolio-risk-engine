@@ -18,16 +18,6 @@ def _fmt_usd(value: float) -> str:
     return f"{sign}${abs(value):,.0f}"
 
 
-def _magnitude_label(abs_val: float) -> str:
-    if abs_val < 0.5:
-        return "marginal"
-    if abs_val < 2.0:
-        return "moderate"
-    if abs_val < 5.0:
-        return "significant"
-    return "severe"
-
-
 def generate_narrative(
     portfolio_summary: dict,
     factor_contributions: dict,
@@ -44,8 +34,7 @@ def generate_narrative(
     total_invested = portfolio_summary["total_invested"]
 
     direction = "gain" if total_pnl >= 0 else "loss"
-    direction_verb = "gained" if total_pnl >= 0 else "lost"
-    magnitude = _magnitude_label(abs(total_return))
+    direction_verb = "returned" if total_pnl >= 0 else "declined by"
 
     # Sort factors by absolute contribution
     sorted_factors = sorted(
@@ -62,9 +51,8 @@ def generate_narrative(
     # Opening sentence
     opening = (
         f"Under this macro scenario, the portfolio {direction_verb} "
-        f"**{_fmt_pct(total_return)}** ({_fmt_usd(total_pnl)}), "
-        f"representing a **{magnitude} {direction}** on the invested capital of "
-        f"${total_invested:,.0f}."
+        f"**{_fmt_pct(total_return)}** ({_fmt_usd(total_pnl)}) "
+        f"on an invested capital base of ${total_invested:,.0f}."
     )
 
     # Factor drivers
@@ -75,7 +63,7 @@ def generate_narrative(
         factor_label = FACTORS.get(top[0], {}).get("label", top[0])
         driver_dir = "positive" if top[1] >= 0 else "negative"
         driver_text = (
-            f"The dominant driver was **{factor_label}**, which contributed "
+            f"The primary driver was **{factor_label}**, which contributed "
             f"**{_fmt_pct(top[1])}** to the portfolio return ({driver_dir} impact)."
         )
 
@@ -84,7 +72,7 @@ def generate_narrative(
             second_label = FACTORS.get(second[0], {}).get("label", second[0])
             second_dir = "reinforcing" if (top[1] * second[1]) > 0 else "partially offsetting"
             driver_text += (
-                f" **{second_label}** was a {second_dir} factor, "
+                f" **{second_label}** provided a {second_dir} effect, "
                 f"contributing **{_fmt_pct(second[1])}**."
             )
 
@@ -99,9 +87,32 @@ def generate_narrative(
             )
         if worst_asset["Return (%)"] < -0.01:
             asset_text += (
-                f"**{worst_asset['Asset']}** was the hardest hit, "
+                f"**{worst_asset['Asset']}** experienced the largest drawdown, "
                 f"returning {_fmt_pct(worst_asset['Return (%)'])} "
                 f"({_fmt_usd(worst_asset['P&L ($)'])})."
+            )
+
+    # Diversification observation
+    hedge_text = ""
+    if len(results_df) > 1:
+        positive_assets = results_df[results_df["Return (%)"] > 0]
+        negative_assets = results_df[results_df["Return (%)"] < 0]
+        if not positive_assets.empty and not negative_assets.empty:
+            hedge_text = (
+                f"The portfolio showed partial diversification: "
+                f"{len(positive_assets)} asset(s) posted gains while "
+                f"{len(negative_assets)} asset(s) declined, "
+                f"providing some offset to the overall {direction}."
+            )
+        elif negative_assets.empty:
+            hedge_text = (
+                "All assets posted positive returns under this scenario, "
+                "reflecting broad macro tailwinds across the portfolio."
+            )
+        else:
+            hedge_text = (
+                "All assets declined under this scenario, "
+                "indicating concentrated exposure to these macro factors with limited diversification benefit."
             )
 
     # Macro context
@@ -122,26 +133,6 @@ def generate_narrative(
             "The scenario assumed the following macro shocks: "
             + ", ".join(context_parts) + "."
         )
-
-    # Hedge effectiveness note
-    hedge_text = ""
-    if len(results_df) > 1:
-        positive_assets = results_df[results_df["Return (%)"] > 0]
-        negative_assets = results_df[results_df["Return (%)"] < 0]
-        if not positive_assets.empty and not negative_assets.empty:
-            hedge_text = (
-                f"The portfolio showed **partial diversification**: "
-                f"{len(positive_assets)} asset(s) posted gains while "
-                f"{len(negative_assets)} asset(s) declined, "
-                f"which cushioned the overall impact."
-            )
-        elif negative_assets.empty:
-            hedge_text = "All assets posted positive returns under this scenario, reflecting broad macro tailwinds."
-        else:
-            hedge_text = (
-                "All assets declined under this scenario, "
-                "suggesting the portfolio has concentrated exposure to these macro factors."
-            )
 
     sections = [opening, driver_text]
     if asset_text:
