@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.templates import FACTORS
 from src.factor_model import compute_results
-from src.ui import apply_theme, POS, NEG, ACC, NEU, BORDER, LIGHT, CHART_LAYOUT, sign_color, sign_arrow, kpi_card, nav_button
+from src.ui import apply_theme, POS, NEG, ACC, NEU, BORDER, LIGHT, CHART_LAYOUT, sign_color, sign_arrow, kpi_card
 
 st.set_page_config(page_title="Results Dashboard", page_icon="📈", layout="wide")
 apply_theme()
@@ -30,13 +30,13 @@ st.divider()
 
 if not st.session_state.portfolio:
     st.warning("No portfolio defined — please build your portfolio first.")
-    nav_button("← Go to Portfolio Builder", "/Portfolio_Builder")
+    st.markdown("<a class='nav-btn' href='/Portfolio_Builder' target='_self'>← Go to Portfolio Builder</a>", unsafe_allow_html=True)
     st.stop()
 
 active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 if not active_shocks:
     st.warning("No macro shocks are active — all factors are set to zero.")
-    nav_button("← Go to Scenario Builder", "/Scenario_Builder")
+    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>← Go to Scenario Builder</a>", unsafe_allow_html=True)
     st.stop()
 
 # ── Compute ────────────────────────────────────────────────────────────────────
@@ -233,6 +233,6 @@ st.divider()
 
 col_prev, col_next = st.columns(2)
 with col_prev:
-    nav_button("← Adjust Scenario", "/Scenario_Builder")
+    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>← Adjust Scenario</a>", unsafe_allow_html=True)
 with col_next:
-    nav_button("Continue to Contribution Analysis →", "/Contribution_Analysis")
+    st.markdown("<a class='nav-btn' href='/Contribution_Analysis' target='_self'>Continue to Contribution Analysis →</a>", unsafe_allow_html=True)

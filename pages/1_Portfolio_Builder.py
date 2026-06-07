@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import pandas as pd
 
 from src.templates import ASSET_TEMPLATES, FACTORS
-from src.ui import apply_theme, POS, NEG, ACC, LIGHT, BORDER, CHART_LAYOUT, nav_button
+from src.ui import apply_theme, POS, NEG, ACC, LIGHT, BORDER, CHART_LAYOUT
 
 st.set_page_config(page_title="Portfolio Builder", page_icon="🏗️", layout="wide")
 apply_theme()
@@ -233,4 +233,4 @@ else:
 
     st.divider()
     st.markdown("**Portfolio ready? Continue to the Scenario Builder.**")
-    nav_button("Continue to Scenario Builder →", "/Scenario_Builder")
+    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>Continue to Scenario Builder →</a>", unsafe_allow_html=True)

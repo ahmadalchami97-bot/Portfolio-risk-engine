@@ -2,7 +2,7 @@ import streamlit as st
 
 from src.templates import FACTORS, PREBUILT_SCENARIOS
 from src.scenario_checks import classify_severity, check_consistency
-from src.ui import apply_theme, ACC, NEG, POS, NEU, BORDER, LIGHT, sign_color, sign_arrow, kpi_card, nav_button
+from src.ui import apply_theme, ACC, NEG, POS, NEU, BORDER, LIGHT, sign_color, sign_arrow, kpi_card
 
 st.set_page_config(page_title="Scenario Builder", page_icon="⚙️", layout="wide")
 apply_theme()
@@ -277,7 +277,7 @@ with col_reset:
 with col_next:
     if not st.session_state.portfolio:
         st.warning("No portfolio yet — go back and add assets first.")
-        nav_button("← Back to Portfolio Builder", "/Portfolio_Builder")
+        st.markdown("<a class='nav-btn' href='/Portfolio_Builder' target='_self'>← Back to Portfolio Builder</a>", unsafe_allow_html=True)
     else:
         st.markdown("**Portfolio and scenario ready?**")
-        nav_button("Continue to Results Dashboard →", "/Results_Dashboard")
+        st.markdown("<a class='nav-btn' href='/Results_Dashboard' target='_self'>Continue to Results Dashboard →</a>", unsafe_allow_html=True)

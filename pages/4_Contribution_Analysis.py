@@ -7,7 +7,7 @@ import numpy as np
 from src.templates import FACTORS
 from src.factor_model import compute_results, get_asset_factor_contributions
 from src.narrative import generate_narrative
-from src.ui import apply_theme, POS, NEG, ACC, BORDER, LIGHT, CHART_LAYOUT, narrative_box, nav_button
+from src.ui import apply_theme, POS, NEG, ACC, BORDER, LIGHT, CHART_LAYOUT, narrative_box
 
 st.set_page_config(page_title="Contribution Analysis", page_icon="🌪️", layout="wide")
 apply_theme()
@@ -32,13 +32,13 @@ st.divider()
 
 if not st.session_state.portfolio:
     st.warning("No portfolio found.")
-    nav_button("← Go to Portfolio Builder", "/Portfolio_Builder")
+    st.markdown("<a class='nav-btn' href='/Portfolio_Builder' target='_self'>← Go to Portfolio Builder</a>", unsafe_allow_html=True)
     st.stop()
 
 active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 if not active_shocks:
     st.warning("No macro shocks are active.")
-    nav_button("← Go to Scenario Builder", "/Scenario_Builder")
+    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>← Go to Scenario Builder</a>", unsafe_allow_html=True)
     st.stop()
 
 # ── Compute ────────────────────────────────────────────────────────────────────
@@ -259,6 +259,6 @@ st.divider()
 
 col_prev, col_home = st.columns(2)
 with col_prev:
-    nav_button("← Back to Results", "/Results_Dashboard")
+    st.markdown("<a class='nav-btn' href='/Results_Dashboard' target='_self'>← Back to Results</a>", unsafe_allow_html=True)
 with col_home:
-    nav_button("↩ Home", "/")
+    st.markdown("<a class='nav-btn' href='/' target='_self'>↩ Home</a>", unsafe_allow_html=True)
