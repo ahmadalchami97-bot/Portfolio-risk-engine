@@ -6,6 +6,11 @@ Beta interpretation: % return of asset per 1 unit of factor shock.
       1 unit = 1 percentage point (pp). e.g. Fed hikes 1pp → +100bps.
   - Market factors (DXY, Oil Price):
       1 unit = 1% change. e.g. DXY +5 → dollar up 5%.
+
+IMPORTANT: All betas are assumption-based, not statistically estimated.
+They reflect directional consensus from financial economics literature
+and standard institutional practice. See page 5 (Assumptions) for full
+rationale and limitations.
 """
 
 ASSET_TEMPLATES = {
@@ -16,7 +21,7 @@ ASSET_TEMPLATES = {
         "betas": {
             "Fed Funds Rate": -2.0,
             "US 10Y Yield":   -3.0,
-            "Inflation":       5.0,
+            "Inflation":       3.0,   # reduced from 5.0 — empirical CPI sensitivity is moderate
             "GDP Growth":     -1.0,
             "DXY":            -0.8,
             "Oil Price":       0.3,
@@ -41,9 +46,9 @@ ASSET_TEMPLATES = {
         "asset_class": "Bond",
         "betas": {
             "Fed Funds Rate": -5.0,
-            "US 10Y Yield":   -8.0,
+            "US 10Y Yield":   -8.0,   # compressed vs true duration (~16y) to avoid double-counting
             "Inflation":      -3.0,
-            "GDP Growth":     -1.0,
+            "GDP Growth":     -0.5,   # reduced from -1.0 — GDP→bond link is indirect
             "DXY":             0.1,
             "Oil Price":      -0.1,
         },
@@ -57,9 +62,171 @@ ASSET_TEMPLATES = {
             "US 10Y Yield":   -3.0,
             "Inflation":       2.0,
             "GDP Growth":      2.0,
-            "DXY":            -0.5,
+            "DXY":            -0.5,   # CHF/USD exposure: USD strengthens → CHF assets worth less in USD
             "Oil Price":       0.0,
         },
+    },
+}
+
+# ── Detailed beta rationale (used by Assumptions page) ────────────────────────
+# Each entry: (sign_correct, magnitude_note, economic_rationale)
+
+BETA_RATIONALE = {
+    "Gold": {
+        "Fed Funds Rate": (
+            "✅ Correct",
+            "Moderate — ~2% loss per 100bps hike is conservative",
+            "Higher real rates raise the opportunity cost of holding non-yielding gold. "
+            "Well-documented in World Gold Council research.",
+        ),
+        "US 10Y Yield": (
+            "✅ Correct",
+            "Moderate — some studies find -4% to -6%; we use -3%",
+            "Gold prices track real 10Y yields closely (gold vs. TIPS spread). "
+            "Negative relationship is among the most robust in commodity research.",
+        ),
+        "Inflation": (
+            "✅ Correct",
+            "Conservative — gold's inflation hedge is empirically unreliable in short windows",
+            "Gold is widely cited as an inflation hedge, but empirical evidence is mixed. "
+            "It performed well in the 1970s and 2020–2022 but near-zero sensitivity in 2010s. "
+            "Beta of +3.0 reflects a moderate assumption.",
+        ),
+        "GDP Growth": (
+            "✅ Correct",
+            "Small — directional only",
+            "Strong growth reduces safe-haven demand for gold. "
+            "Small magnitude reflects the weak and inconsistent empirical relationship.",
+        ),
+        "DXY": (
+            "✅ Correct",
+            "Reasonable — literature range is -0.5 to -1.2 per 1% USD move",
+            "Gold is priced in USD; a stronger dollar mechanically lowers gold's USD price. "
+            "One of the most consistent relationships in commodity markets.",
+        ),
+        "Oil Price": (
+            "✅ Correct",
+            "Small — commodity co-movement only",
+            "Weak positive correlation via the joint inflation/commodity complex. "
+            "Not a structural relationship.",
+        ),
+    },
+    "US Equities": {
+        "Fed Funds Rate": (
+            "✅ Correct",
+            "Moderate — empirical range is -2% to -5% per 100bps",
+            "Tighter monetary policy raises discount rates and reduces earnings growth expectations. "
+            "Broadly supported across multiple market cycles.",
+        ),
+        "US 10Y Yield": (
+            "⚠️ Regime-dependent",
+            "Moderate — sign depends on whether yields rise from growth or inflation",
+            "In a growth-driven yield rise, equities and yields can be positively correlated. "
+            "In an inflation/Fed-driven rise (e.g. 2022), both fall. "
+            "The assumed -2.0 applies to a rate-headwind regime.",
+        ),
+        "Inflation": (
+            "✅ Correct",
+            "Moderate — varies by type of inflation",
+            "Demand-pull inflation can be equity-positive; cost-push inflation and "
+            "Fed reaction risk are equity-negative. Net assumption: moderately negative.",
+        ),
+        "GDP Growth": (
+            "✅ Correct",
+            "High — reflects operating leverage amplification",
+            "Corporate earnings grow faster than GDP due to operating and financial leverage. "
+            "A 1pp GDP acceleration typically translates to 3–5% earnings growth. "
+            "+4.0 is at the higher end of consensus but defensible.",
+        ),
+        "DXY": (
+            "✅ Correct",
+            "Small — S&P 500 has ~40% international revenue",
+            "A stronger dollar reduces the USD value of foreign earnings. "
+            "Small magnitude reflects partial hedging and sector diversification.",
+        ),
+        "Oil Price": (
+            "✅ Correct",
+            "Near-neutral — energy sector gains roughly offset consumer drag",
+            "S&P 500 is diversified; oil rises benefit energy names but hurt consumer "
+            "discretionary and industrials. Net effect is near zero.",
+        ),
+    },
+    "US Treasuries": {
+        "Fed Funds Rate": (
+            "✅ Correct",
+            "Moderate — less than full duration; short end transmission is imperfect",
+            "Fed hikes transmit to the long end via rate expectations, but with dampening. "
+            "Long bonds are more driven by 10Y yield directly.",
+        ),
+        "US 10Y Yield": (
+            "✅ Correct",
+            "Compressed vs true duration (~16y for TLT) to avoid double-counting",
+            "Modified duration of TLT is ~16–17 years, implying ~-16% per 100bps. "
+            "We use -8.0 to avoid double-counting with the Fed Funds Rate beta. "
+            "This is the most significant model simplification in the template.",
+        ),
+        "Inflation": (
+            "✅ Correct",
+            "Moderate — inflation erodes real value of fixed coupons and pushes yields up",
+            "Fixed nominal coupon payments are worth less in real terms. "
+            "Inflation also triggers Fed action which raises nominal yields further.",
+        ),
+        "GDP Growth": (
+            "✅ Correct",
+            "Small — GDP→bond link is indirect, via rate expectations",
+            "Strong growth → higher rates expected → yields rise → bond prices fall. "
+            "But safe-haven flows during weak growth can offset. Small negative is appropriate.",
+        ),
+        "DXY": (
+            "✅ Correct",
+            "Near-zero — minor safe-haven correlation",
+            "Treasuries are a global safe haven; dollar strength often accompanies Treasury demand. "
+            "Very small positive. Directionally plausible.",
+        ),
+        "Oil Price": (
+            "✅ Correct",
+            "Near-zero — indirect via inflation channel",
+            "Higher oil → higher inflation → higher yields → bond price decline. "
+            "Marginal effect.",
+        ),
+    },
+    "Swiss Real Estate": {
+        "Fed Funds Rate": (
+            "✅ Correct",
+            "Smaller than US assets — Swiss RE is partly insulated from Fed policy",
+            "Global rate correlation exists, but Switzerland's SNB operates independently. "
+            "Swiss mortgage market and valuations are less directly tied to the Fed.",
+        ),
+        "US 10Y Yield": (
+            "✅ Correct",
+            "Moderate — listed RE trades like a long-duration bond",
+            "Swiss REITs are valued on discounted cash flows; higher yields compress valuations. "
+            "Standard real estate duration sensitivity.",
+        ),
+        "Inflation": (
+            "✅ Correct",
+            "Moderate — Swiss RE leases often indexed to CPI",
+            "Swiss commercial and residential leases frequently include CPI escalators. "
+            "Real asset with good inflation pass-through.",
+        ),
+        "GDP Growth": (
+            "✅ Correct",
+            "Moderate — occupancy and rent growth are GDP-sensitive",
+            "Economic growth supports office/retail occupancy, residential demand, "
+            "and transaction volumes.",
+        ),
+        "DXY": (
+            "✅ Correct",
+            "Small negative — currency translation for USD-based investor",
+            "Swiss RE is priced in CHF. When USD strengthens (DXY↑), CHF weakens, "
+            "so USD-based returns fall. Sign is correct from a USD investor's perspective.",
+        ),
+        "Oil Price": (
+            "✅ Correct",
+            "Zero — no direct channel identified",
+            "Swiss real estate has no significant direct exposure to oil price movements. "
+            "Any indirect effect via inflation is captured by the Inflation beta.",
+        ),
     },
 }
 

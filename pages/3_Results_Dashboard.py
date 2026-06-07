@@ -5,14 +5,15 @@ import pandas as pd
 
 from src.templates import FACTORS
 from src.factor_model import compute_results
+from src.ui import apply_theme, POS, NEG, ACC, BORDER, LIGHT, CHART_LAYOUT
 
 st.set_page_config(page_title="Results Dashboard", page_icon="📈", layout="wide")
+apply_theme()
 
-# ── Session state init ─────────────────────────────────────────────────────────
+# ── Session state ──────────────────────────────────────────────────────────────
 
 if "portfolio" not in st.session_state:
     st.session_state.portfolio = []
-
 if "scenario" not in st.session_state:
     st.session_state.scenario = {f: 0.0 for f in FACTORS}
 
@@ -20,71 +21,67 @@ if "scenario" not in st.session_state:
 
 st.title("📈 Results Dashboard")
 st.markdown(
-    "Estimated portfolio impact under the active macro scenario. "
-    "Returns are computed using the pre-calibrated factor sensitivity model."
+    "Estimated portfolio impact under the active macro scenario, "
+    "computed using the pre-defined factor sensitivity model."
 )
 st.divider()
 
-# ── Guard: need portfolio and scenario ────────────────────────────────────────
+# ── Guards ─────────────────────────────────────────────────────────────────────
 
 if not st.session_state.portfolio:
-    st.warning("No portfolio found. Please build your portfolio first.")
+    st.warning("No portfolio defined — please build your portfolio first.")
     st.page_link("pages/1_Portfolio_Builder.py", label="← Go to Portfolio Builder")
     st.stop()
 
-active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0}
+active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 if not active_shocks:
-    st.warning("No macro scenario is active. All factor shocks are set to zero.")
+    st.warning("No macro shocks are active — all factors are set to zero.")
     st.page_link("pages/2_Scenario_Builder.py", label="← Go to Scenario Builder")
     st.stop()
 
-# ── Compute results ────────────────────────────────────────────────────────────
+# ── Compute ────────────────────────────────────────────────────────────────────
 
-results_df, portfolio_summary, factor_contributions = compute_results(
+results_df, summary, factor_contribs = compute_results(
     st.session_state.portfolio,
     st.session_state.scenario,
 )
 
 if results_df is None:
-    st.error("Could not compute results. Check your portfolio and scenario.")
+    st.error("Could not compute results. Check portfolio and scenario inputs.")
     st.stop()
 
-total_invested = portfolio_summary["total_invested"]
-total_pnl = portfolio_summary["total_pnl"]
-total_return_pct = portfolio_summary["total_return_pct"]
-ending_value = portfolio_summary["ending_value"]
+total_invested   = summary["total_invested"]
+total_pnl        = summary["total_pnl"]
+total_return_pct = summary["total_return_pct"]
+ending_value     = summary["ending_value"]
+is_gain          = total_pnl >= 0
 
-# ── Portfolio-level KPIs ──────────────────────────────────────────────────────
+# ── Portfolio KPIs ──────────────────────────────────────────────────────────────
 
 st.subheader("Portfolio Summary")
 
-kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-
-with kpi1:
-    st.metric(
-        "Total Invested",
-        f"${total_invested:,.0f}",
-    )
-with kpi2:
-    st.metric(
-        "Ending Value",
-        f"${ending_value:,.0f}",
-        delta=f"${total_pnl:+,.0f}",
-    )
-with kpi3:
-    st.metric(
-        "Portfolio Return",
-        f"{total_return_pct:+.2f}%",
-    )
-with kpi4:
-    st.metric(
-        "Portfolio P&L",
-        f"${total_pnl:+,.0f}",
-    )
+k1, k2, k3, k4 = st.columns(4)
+k1.metric("Total Invested",  f"${total_invested:,.0f}")
+k2.metric(
+    "Ending Value",
+    f"${ending_value:,.0f}",
+    delta=f"${total_pnl:+,.0f}",
+    delta_color="normal",
+)
+k3.metric(
+    "Portfolio Return",
+    f"{total_return_pct:+.2f}%",
+    delta_color="off",
+)
+k4.metric(
+    "Portfolio P&L",
+    f"${total_pnl:+,.0f}",
+    delta_color="off",
+)
 
 st.divider()
 
-# ── Asset-level results table ──────────────────────────────────────────────────
+# ── Asset results table ────────────────────────────────────────────────────────
 
 st.subheader("Asset-Level Results")
 
@@ -92,131 +89,124 @@ display_df = results_df[
     ["Asset", "Asset Class", "Invested ($)", "Weight (%)", "Return (%)", "P&L ($)", "Ending Value ($)"]
 ].copy()
 
-# Append totals row
-totals_row = pd.DataFrame(
-    [
-        {
-            "Asset": "PORTFOLIO TOTAL",
-            "Asset Class": "",
-            "Invested ($)": total_invested,
-            "Weight (%)": 100.0,
-            "Return (%)": round(total_return_pct, 3),
-            "P&L ($)": round(total_pnl, 2),
-            "Ending Value ($)": round(ending_value, 2),
-        }
-    ]
-)
-display_df = pd.concat([display_df, totals_row], ignore_index=True)
+# Totals row
+totals = pd.DataFrame([{
+    "Asset":             "PORTFOLIO TOTAL",
+    "Asset Class":       "",
+    "Invested ($)":      total_invested,
+    "Weight (%)":        100.0,
+    "Return (%)":        round(total_return_pct, 3),
+    "P&L ($)":           round(total_pnl, 2),
+    "Ending Value ($)":  round(ending_value, 2),
+}])
+display_df = pd.concat([display_df, totals], ignore_index=True)
 
-def color_return(val):
-    if isinstance(val, (int, float)):
-        if val > 0:
-            return "color: #2ca02c; font-weight: bold"
-        elif val < 0:
-            return "color: #d62728; font-weight: bold"
+def _color(val):
+    try:
+        f = float(val)
+        if f > 0: return f"color:{POS}; font-weight:600"
+        if f < 0: return f"color:{NEG}; font-weight:600"
+    except (TypeError, ValueError):
+        pass
     return ""
 
-styled = display_df.style.map(
-    color_return, subset=["Return (%)", "P&L ($)"]
-).format(
-    {
-        "Invested ($)": "${:,.0f}",
-        "Weight (%)": "{:.1f}%",
-        "Return (%)": "{:+.2f}%",
-        "P&L ($)": "${:+,.0f}",
+styled = (
+    display_df.style
+    .map(_color, subset=["Return (%)", "P&L ($)"])
+    .format({
+        "Invested ($)":     "${:,.0f}",
+        "Weight (%)":       "{:.1f}%",
+        "Return (%)":       "{:+.2f}%",
+        "P&L ($)":          "${:+,.0f}",
         "Ending Value ($)": "${:,.0f}",
-    }
+    }, na_rep="—")
 )
-
 st.dataframe(styled, use_container_width=True, hide_index=True)
 
 st.divider()
 
-# ── Asset return bar chart ─────────────────────────────────────────────────────
+# ── Charts ─────────────────────────────────────────────────────────────────────
 
-col_bar, col_waterfall = st.columns(2)
+col_returns, col_waterfall = st.columns(2)
 
-with col_bar:
-    st.subheader("Return by Asset (%)")
+# Asset returns bar chart
+with col_returns:
+    st.subheader("Return by Asset")
+    rdf = results_df[["Asset", "Return (%)"]].copy()
+    rdf["color"] = rdf["Return (%)"].apply(lambda x: POS if x >= 0 else NEG)
 
-    chart_df = results_df[["Asset", "Return (%)"]].copy()
-    chart_df["Color"] = chart_df["Return (%)"].apply(
-        lambda x: "#2ca02c" if x >= 0 else "#d62728"
-    )
-
-    fig_bar = px.bar(
-        chart_df,
-        x="Return (%)",
-        y="Asset",
+    fig_r = go.Figure(go.Bar(
+        x=rdf["Return (%)"],
+        y=rdf["Asset"],
         orientation="h",
-        color="Color",
-        color_discrete_map="identity",
-        text=chart_df["Return (%)"].apply(lambda x: f"{x:+.2f}%"),
-    )
-    fig_bar.update_traces(textposition="outside")
-    fig_bar.update_layout(
+        marker_color=rdf["color"],
+        text=rdf["Return (%)"].apply(lambda x: f"{x:+.2f}%"),
+        textposition="outside",
+        cliponaxis=False,
+    ))
+    x_pad = max(abs(rdf["Return (%)"]).max() * 0.25, 0.5)
+    fig_r.update_layout(
+        **{**CHART_LAYOUT, "height": max(300, len(results_df) * 62 + 60)},
+        xaxis=dict(
+            title="Estimated Return (%)",
+            zeroline=True, zerolinewidth=2, zerolinecolor="#94a3b8",
+            range=[rdf["Return (%)"].min() - x_pad, rdf["Return (%)"].max() + x_pad],
+        ),
+        yaxis=dict(title=""),
         showlegend=False,
-        xaxis_title="Estimated Return (%)",
-        yaxis_title="",
-        margin=dict(t=20, b=20),
-        height=max(300, len(results_df) * 60 + 80),
-        xaxis=dict(zeroline=True, zerolinewidth=2, zerolinecolor="black"),
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_r, use_container_width=True)
 
+# P&L waterfall chart
 with col_waterfall:
-    st.subheader("P&L Breakdown ($)")
-
+    st.subheader("P&L Waterfall ($)")
     assets = results_df["Asset"].tolist()
-    pnls = results_df["P&L ($)"].tolist()
-    measures = ["relative"] * len(assets) + ["total"]
-    x_labels = assets + ["Portfolio Total"]
-    y_vals = pnls + [total_pnl]
+    pnls   = results_df["P&L ($)"].tolist()
 
-    fig_waterfall = go.Figure(
-        go.Waterfall(
-            orientation="v",
-            measure=measures,
-            x=x_labels,
-            y=y_vals,
-            text=[f"${v:+,.0f}" for v in y_vals],
-            textposition="outside",
-            connector={"line": {"color": "rgb(63,63,63)"}},
-            increasing={"marker": {"color": "#2ca02c"}},
-            decreasing={"marker": {"color": "#d62728"}},
-            totals={"marker": {"color": "#1f77b4"}},
-        )
-    )
-    fig_waterfall.update_layout(
+    fig_wf = go.Figure(go.Waterfall(
+        orientation="v",
+        measure=["relative"] * len(assets) + ["total"],
+        x=assets + ["Total"],
+        y=pnls + [total_pnl],
+        text=[f"${v:+,.0f}" for v in pnls + [total_pnl]],
+        textposition="outside",
+        cliponaxis=False,
+        connector={"line": {"color": BORDER, "width": 1}},
+        increasing={"marker": {"color": POS}},
+        decreasing={"marker": {"color": NEG}},
+        totals={"marker": {"color": ACC}},
+    ))
+    fig_wf.update_layout(
+        **{**CHART_LAYOUT, "height": max(300, len(results_df) * 62 + 60)},
+        yaxis=dict(
+            title="P&L ($)",
+            zeroline=True, zerolinewidth=2, zerolinecolor="#94a3b8",
+            showgrid=True, gridcolor=BORDER,
+        ),
         showlegend=False,
-        yaxis_title="P&L ($)",
-        margin=dict(t=20, b=20),
-        height=max(300, len(results_df) * 60 + 80),
-        yaxis=dict(zeroline=True, zerolinewidth=2, zerolinecolor="black"),
     )
-    st.plotly_chart(fig_waterfall, use_container_width=True)
+    st.plotly_chart(fig_wf, use_container_width=True)
 
 st.divider()
 
 # ── Active scenario recap ──────────────────────────────────────────────────────
 
 st.subheader("Active Macro Scenario")
+st.caption("Shocks applied in this analysis.")
 
-active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0}
-if active_shocks:
-    shock_cols = st.columns(len(active_shocks))
-    for i, (factor, shock) in enumerate(active_shocks.items()):
-        cfg = FACTORS[factor]
-        sign = "+" if shock >= 0 else ""
-        with shock_cols[i]:
-            st.metric(
-                label=f"{cfg['icon']} {cfg['label']}",
-                value=f"{sign}{shock} {cfg['unit']}",
-            )
+shock_cols = st.columns(min(len(active_shocks), 6))
+for i, (factor, shock) in enumerate(active_shocks.items()):
+    cfg  = FACTORS[factor]
+    sign = "+" if shock >= 0 else ""
+    with shock_cols[i % 6]:
+        st.metric(
+            label=f"{cfg['icon']} {cfg['label']}",
+            value=f"{sign}{shock} {cfg['unit']}",
+            delta=f"Base: {cfg['baseline_label']}",
+            delta_color="off",
+        )
 
 st.divider()
-
-# ── Navigation ─────────────────────────────────────────────────────────────────
 
 col_prev, col_next = st.columns(2)
 with col_prev:
