@@ -1,13 +1,17 @@
 import streamlit as st
 
+from src.ui import apply_theme, ACC
+
 st.set_page_config(
     page_title="Portfolio Risk Engine",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+apply_theme()
 
-# Initialise shared session state used by all pages
+# ── Session state ──────────────────────────────────────────────────────────────
+
 if "portfolio" not in st.session_state:
     st.session_state.portfolio = []
 
@@ -21,122 +25,118 @@ if "scenario" not in st.session_state:
         "Oil Price":      0.0,
     }
 
-# ── Header ────────────────────────────────────────────────────────────────────
+# ── Header ─────────────────────────────────────────────────────────────────────
 
 st.title("📊 Portfolio Risk Engine")
 st.markdown(
     "**Macro scenario analysis for investment portfolios.** "
-    "Build your portfolio, define a macro shock, and instantly see the estimated impact."
+    "Build a portfolio, define a macro shock, and instantly see the estimated impact "
+    "on each asset and the portfolio as a whole."
 )
-
 st.divider()
 
-# ── Workflow guide ─────────────────────────────────────────────────────────────
+# ── Workflow ───────────────────────────────────────────────────────────────────
 
-col1, col2, col3, col4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-with col1:
+with c1:
     st.markdown("### Step 1")
-    st.markdown("**Portfolio Builder**")
+    st.markdown("**🏗️ Portfolio Builder**")
     st.markdown(
-        "Add your assets using one of the pre-built templates "
-        "(Gold, US Equities, Treasuries, Swiss Real Estate) "
-        "and enter the amount invested in each."
+        "Add assets from four templates: Gold, US Equities, US Treasuries, Swiss Real Estate. "
+        "Enter the dollar amount invested in each."
     )
     st.page_link("pages/1_Portfolio_Builder.py", label="Open Portfolio Builder →")
 
-with col2:
+with c2:
     st.markdown("### Step 2")
-    st.markdown("**Scenario Builder**")
+    st.markdown("**⚙️ Scenario Builder**")
     st.markdown(
-        "Define a macro scenario by moving sliders for each factor: "
-        "Fed Funds Rate, 10Y Yield, Inflation, GDP, DXY, and Oil. "
-        "Or load a pre-built scenario template."
+        "Set shocks to six macro factors: Fed Funds Rate, US 10Y Yield, Inflation, "
+        "GDP Growth, DXY, and Oil Price. Or load a pre-built scenario template."
     )
     st.page_link("pages/2_Scenario_Builder.py", label="Open Scenario Builder →")
 
-with col3:
+with c3:
     st.markdown("### Step 3")
-    st.markdown("**Results Dashboard**")
+    st.markdown("**📈 Results Dashboard**")
     st.markdown(
-        "See the estimated return, P&L, and ending value for each asset "
-        "and the portfolio as a whole."
+        "See the estimated return, P&L, and ending value for each asset and the "
+        "portfolio total, with bar and waterfall charts."
     )
     st.page_link("pages/3_Results_Dashboard.py", label="Open Results →")
 
-with col4:
+with c4:
     st.markdown("### Step 4")
-    st.markdown("**Contribution Analysis**")
+    st.markdown("**🌪️ Contribution Analysis**")
     st.markdown(
-        "Understand what drove the result: a tornado chart ranks each macro "
-        "factor by its impact, and a narrative summary explains the outcome "
-        "in plain English."
+        "Tornado chart, asset×factor heatmap, stacked decomposition, and a plain-English "
+        "narrative explaining what drove the result."
     )
     st.page_link("pages/4_Contribution_Analysis.py", label="Open Analysis →")
 
 st.divider()
 
-# ── Status panel ───────────────────────────────────────────────────────────────
+# ── Status ─────────────────────────────────────────────────────────────────────
 
-st.markdown("### Current Status")
-status_col1, status_col2 = st.columns(2)
+st.subheader("Current Session Status")
 
-with status_col1:
-    n_assets = len(st.session_state.portfolio)
-    if n_assets == 0:
+s1, s2 = st.columns(2)
+with s1:
+    n = len(st.session_state.portfolio)
+    if n == 0:
         st.warning("No portfolio built yet. Start with Step 1.")
     else:
         total = sum(a["amount"] for a in st.session_state.portfolio)
-        st.success(
-            f"Portfolio: **{n_assets} asset(s)** — "
-            f"Total invested: **${total:,.0f}**"
-        )
+        st.success(f"Portfolio: **{n} asset(s)** — Total invested: **${total:,.0f}**")
 
-with status_col2:
-    active_shocks = {
-        f: v for f, v in st.session_state.scenario.items() if abs(v) > 0
-    }
-    if not active_shocks:
+with s2:
+    active = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0}
+    if not active:
         st.warning("No scenario defined yet. Continue with Step 2.")
     else:
-        shock_labels = []
-        for f, v in active_shocks.items():
-            sign = "+" if v >= 0 else ""
-            shock_labels.append(f"{f}: {sign}{v}")
-        st.success("Scenario active: " + " | ".join(shock_labels))
+        parts = [f"{f}: {'+' if v >= 0 else ''}{v}" for f, v in active.items()]
+        st.success("Scenario active: " + " | ".join(parts))
 
 st.divider()
 
-# ── Methodology note ────────────────────────────────────────────────────────────
+# ── Model summary ──────────────────────────────────────────────────────────────
 
-with st.expander("How does the model work?"):
-    st.markdown(
-        """
-        **Factor Sensitivity Model**
+st.subheader("How It Works")
 
-        Each asset has a set of pre-calibrated *factor betas* — numbers that describe
-        how sensitive the asset is to each macro variable.
+col_model, col_warn = st.columns([3, 2])
 
-        The formula is simple:
+with col_model:
+    st.markdown("""
+**Factor Sensitivity Model**
 
-        > **Asset Return (%) = Σ ( Beta_k × Shock_k )**
+Each asset has pre-defined *factor betas* — sensitivity coefficients that
+describe how the asset is expected to respond to each macro variable.
 
-        Where:
-        - **Beta_k** = % return of the asset per 1 unit of change in factor _k_
-        - **Shock_k** = the macro change you define in the Scenario Builder
+> **Return (%) = Σ ( Beta_k × Shock_k )**
 
-        **Units:**
-        - Rate factors (Fed Funds, 10Y Yield, Inflation, GDP): shock is in **percentage points** (pp).
-          A shock of `+1.0` means a 1 percentage point increase (e.g. Fed hikes 100bps).
-        - Market factors (DXY, Oil): shock is in **percent change** (%).
-          A shock of `+10.0` means the index/price rises 10%.
+Where shock is in natural units: percentage points (pp) for rate factors,
+percent change (%) for DXY and Oil.
 
-        **Pre-calibrated betas** are based on historical asset-factor relationships
-        and institutional consensus. They are intentionally simplified for
-        transparency and ease of use.
+**Portfolio return** is the investment-weighted average of asset returns.
 
-        **Important limitation:** This is a *linear*, single-period model.
-        It does not capture non-linear effects, path dependency, or tail risk.
-        Use it for directional intuition, not precise forecasting.
-        """
+Four asset templates are available, each with six factor betas:
+
+| Template | Fed Funds | US 10Y | Inflation | GDP | DXY | Oil |
+|---|---|---|---|---|---|---|
+| 🥇 Gold | −2.0 | −3.0 | +3.0 | −1.0 | −0.8 | +0.3 |
+| 📈 US Equities | −3.0 | −2.0 | −1.5 | +4.0 | −0.3 | +0.2 |
+| 🏛️ US Treasuries | −5.0 | −8.0 | −3.0 | −0.5 | +0.1 | −0.1 |
+| 🏠 Swiss RE | −1.5 | −3.0 | +2.0 | +2.0 | −0.5 | 0.0 |
+""")
+
+with col_warn:
+    st.warning(
+        "**Important:** All factor betas are **assumption-based**, "
+        "not statistically estimated from historical data. "
+        "Results are directional estimates for analytical discussion — "
+        "not investment advice or precise forecasts.\n\n"
+        "See the Assumptions & Methodology page for full disclosure.",
+        icon="⚠️",
     )
+    st.page_link("pages/5_Assumptions.py", label="📋 View Assumptions & Methodology →")

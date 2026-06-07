@@ -1,14 +1,15 @@
 import streamlit as st
 
 from src.templates import FACTORS, PREBUILT_SCENARIOS
+from src.ui import apply_theme, ACC, NEG, BORDER
 
 st.set_page_config(page_title="Scenario Builder", page_icon="⚙️", layout="wide")
+apply_theme()
 
-# ── Session state init ─────────────────────────────────────────────────────────
+# ── Session state ──────────────────────────────────────────────────────────────
 
 if "portfolio" not in st.session_state:
     st.session_state.portfolio = []
-
 if "scenario" not in st.session_state:
     st.session_state.scenario = {f: 0.0 for f in FACTORS}
 
@@ -16,135 +17,140 @@ if "scenario" not in st.session_state:
 
 st.title("⚙️ Scenario Builder")
 st.markdown(
-    "Define a macro scenario by adjusting the sliders below. "
-    "Each slider represents a **change** from the current baseline value. "
-    "Or load a pre-built scenario template to get started quickly."
+    "Define a macro scenario by moving the sliders below. "
+    "Each value represents the **change** from today's baseline. "
+    "Load a pre-built template to get started quickly."
 )
 st.divider()
 
-# ── Pre-built scenario loader ──────────────────────────────────────────────────
+# ── Pre-built templates ────────────────────────────────────────────────────────
 
-st.subheader("Load a Pre-Built Scenario")
+st.subheader("Pre-Built Scenario Templates")
 
-selected_template = st.selectbox(
-    "Scenario Template",
+selected = st.selectbox(
+    "Load a scenario template",
     options=list(PREBUILT_SCENARIOS.keys()),
     index=0,
-    help="Load a pre-configured macro scenario. You can then fine-tune it with the sliders.",
 )
 
-if selected_template != "— Select a template —":
-    template_data = PREBUILT_SCENARIOS[selected_template]
-    st.info(f"**{selected_template}** — {template_data['description']}")
+if selected != "— Select a template —":
+    tdata = PREBUILT_SCENARIOS[selected]
+    st.info(f"**{selected}** — {tdata['description']}")
 
     if st.button("Load This Scenario", type="primary"):
-        st.session_state.scenario = dict(template_data["shocks"])
-        st.success(f"Scenario loaded: {selected_template}")
+        for factor, shock in tdata["shocks"].items():
+            # Update both the scenario dict and the slider widget key so
+            # the sliders visually reflect the loaded values on rerun.
+            st.session_state.scenario[factor] = float(shock)
+            st.session_state[f"slider_{factor}"] = float(shock)
+        st.success(f"Loaded: {selected}")
         st.rerun()
 
 st.divider()
 
 # ── Manual sliders ─────────────────────────────────────────────────────────────
 
-st.subheader("Manual Factor Shocks")
+st.subheader("Factor Shocks")
 st.markdown(
-    "Adjust each factor independently. "
-    "Values represent the **change** from today's baseline."
+    "Move each slider to apply a shock. "
+    "Values are **changes** from the baseline shown below each slider."
 )
 
 col_a, col_b = st.columns(2)
-
 factor_list = list(FACTORS.keys())
-left_factors = factor_list[: len(factor_list) // 2 + len(factor_list) % 2]
-right_factors = factor_list[len(factor_list) // 2 + len(factor_list) % 2 :]
+left_factors  = factor_list[:3]   # Fed Funds, US10Y, Inflation
+right_factors = factor_list[3:]   # GDP, DXY, Oil
 
-def render_factor_slider(factor: str, container):
+
+def render_slider(factor: str, container):
     cfg = FACTORS[factor]
-    current_val = st.session_state.scenario.get(factor, 0.0)
+    current = float(st.session_state.scenario.get(factor, 0.0))
 
     with container:
         st.markdown(
             f"**{cfg['icon']} {cfg['label']}**  \n"
-            f"<span style='color:grey;font-size:0.85em'>"
-            f"Baseline: {cfg['baseline_label']} | Unit: {cfg['unit']} | {cfg['example']}"
+            f"<span style='color:{BORDER[1:]};font-size:0.82em;'>"  # reuse hex but as text
+            f"Baseline today: **{cfg['baseline_label']}** &nbsp;|&nbsp; "
+            f"Unit: **{cfg['unit']}** &nbsp;|&nbsp; {cfg['example']}"
             f"</span>",
             unsafe_allow_html=True,
         )
+
         new_val = st.slider(
             label=factor,
             min_value=float(cfg["min"]),
             max_value=float(cfg["max"]),
-            value=float(current_val),
+            value=current,
             step=float(cfg["step"]),
             label_visibility="collapsed",
             key=f"slider_{factor}",
         )
+        # Keep scenario dict in sync with the slider widget
         st.session_state.scenario[factor] = new_val
 
-        # Colour-coded indicator
-        if abs(new_val) < 0.01:
-            st.markdown(
-                "<span style='color:grey'>Shock: **0** (no change)</span>",
-                unsafe_allow_html=True,
-            )
+        if abs(new_val) < 0.001:
+            badge = f"<span style='color:#94a3b8'>No shock applied</span>"
         elif new_val > 0:
-            unit = cfg["unit"]
-            st.markdown(
-                f"<span style='color:#d62728'>Shock: **+{new_val} {unit}** ▲</span>",
-                unsafe_allow_html=True,
+            badge = (
+                f"<span style='background:{NEG};color:white;"
+                f"padding:2px 8px;border-radius:4px;font-size:0.82em;'>"
+                f"▲ +{new_val} {cfg['unit']}</span>"
             )
         else:
-            unit = cfg["unit"]
-            st.markdown(
-                f"<span style='color:#1f77b4'>Shock: **{new_val} {unit}** ▼</span>",
-                unsafe_allow_html=True,
+            badge = (
+                f"<span style='background:#2563eb;color:white;"
+                f"padding:2px 8px;border-radius:4px;font-size:0.82em;'>"
+                f"▼ {new_val} {cfg['unit']}</span>"
             )
+        st.markdown(badge + "&nbsp;", unsafe_allow_html=True)
         st.markdown("")
 
-for factor in left_factors:
-    render_factor_slider(factor, col_a)
 
-for factor in right_factors:
-    render_factor_slider(factor, col_b)
+for f in left_factors:
+    render_slider(f, col_a)
+for f in right_factors:
+    render_slider(f, col_b)
 
 st.divider()
 
-# ── Scenario summary ───────────────────────────────────────────────────────────
+# ── Active scenario summary ────────────────────────────────────────────────────
 
-st.subheader("Active Scenario Summary")
+st.subheader("Active Scenario")
 
-active = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0}
+active = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 
 if not active:
-    st.warning("All factors are set to zero — no macro shock is active.")
+    st.warning("All factors are at zero — no macro shock is active.")
 else:
-    summary_cols = st.columns(len(active))
+    cols = st.columns(min(len(active), 6))
     for i, (factor, shock) in enumerate(active.items()):
         cfg = FACTORS[factor]
         sign = "+" if shock >= 0 else ""
-        color = "#d62728" if shock > 0 else "#1f77b4"
-        with summary_cols[i]:
+        with cols[i % 6]:
             st.metric(
                 label=f"{cfg['icon']} {cfg['label']}",
                 value=f"{sign}{shock} {cfg['unit']}",
-                delta=f"Baseline: {cfg['baseline_label']}",
+                delta=f"Base: {cfg['baseline_label']}",
+                delta_color="off",
             )
 
 st.divider()
 
-# ── Reset and navigation ───────────────────────────────────────────────────────
+# ── Reset / navigation ─────────────────────────────────────────────────────────
 
 col_reset, col_next = st.columns([1, 2])
 
 with col_reset:
-    if st.button("🔄 Reset All Shocks to Zero", use_container_width=True):
-        st.session_state.scenario = {f: 0.0 for f in FACTORS}
+    if st.button("🔄 Reset All to Zero", width="stretch"):
+        for f in FACTORS:
+            st.session_state.scenario[f] = 0.0
+            st.session_state[f"slider_{f}"] = 0.0
         st.rerun()
 
 with col_next:
     if not st.session_state.portfolio:
-        st.warning("Your portfolio is empty. Go back and add assets first.")
+        st.warning("No portfolio yet — go back and add assets first.")
         st.page_link("pages/1_Portfolio_Builder.py", label="← Back to Portfolio Builder")
     else:
-        st.markdown("**Portfolio and scenario ready? View the results.**")
+        st.markdown("**Portfolio and scenario ready?**")
         st.page_link("pages/3_Results_Dashboard.py", label="Continue to Results Dashboard →")
