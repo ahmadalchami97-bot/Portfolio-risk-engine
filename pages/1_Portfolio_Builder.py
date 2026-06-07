@@ -52,7 +52,7 @@ with st.form("add_asset_form", clear_on_submit=True):
             "Amount Invested ($)",
             min_value=0,
             value=1_000_000,
-            step=100_000,
+            step=1_000,
             format="%d",
             help="Enter the dollar value of this position. Supports institutional sizes — e.g. 250,000,000.",
         )
@@ -233,4 +233,5 @@ else:
 
     st.divider()
     st.markdown("**Portfolio ready? Continue to the Scenario Builder.**")
-    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>Continue to Scenario Builder →</a>", unsafe_allow_html=True)
+    if st.button("Continue to Scenario Builder →", type="primary", width="stretch", key="nav_to_scenario"):
+        st.switch_page("pages/2_Scenario_Builder.py")

@@ -30,13 +30,15 @@ st.divider()
 
 if not st.session_state.portfolio:
     st.warning("No portfolio defined — please build your portfolio first.")
-    st.markdown("<a class='nav-btn' href='/Portfolio_Builder' target='_self'>← Go to Portfolio Builder</a>", unsafe_allow_html=True)
+    if st.button("← Go to Portfolio Builder", type="primary", width="stretch", key="nav_guard_portfolio"):
+        st.switch_page("pages/1_Portfolio_Builder.py")
     st.stop()
 
 active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 if not active_shocks:
     st.warning("No macro shocks are active — all factors are set to zero.")
-    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>← Go to Scenario Builder</a>", unsafe_allow_html=True)
+    if st.button("← Go to Scenario Builder", type="primary", width="stretch", key="nav_guard_scenario"):
+        st.switch_page("pages/2_Scenario_Builder.py")
     st.stop()
 
 # ── Compute ────────────────────────────────────────────────────────────────────
@@ -225,14 +227,14 @@ for i, (factor, shock) in enumerate(active_shocks.items()):
         st.metric(
             label=f"{cfg['icon']} {cfg['label']}",
             value=f"{sign}{shock} {cfg['unit']}",
-            delta=f"Base: {cfg['baseline_label']}",
-            delta_color="off",
         )
 
 st.divider()
 
 col_prev, col_next = st.columns(2)
 with col_prev:
-    st.markdown("<a class='nav-btn' href='/Scenario_Builder' target='_self'>← Adjust Scenario</a>", unsafe_allow_html=True)
+    if st.button("← Adjust Scenario", type="primary", width="stretch", key="nav_adjust_scenario"):
+        st.switch_page("pages/2_Scenario_Builder.py")
 with col_next:
-    st.markdown("<a class='nav-btn' href='/Contribution_Analysis' target='_self'>Continue to Contribution Analysis →</a>", unsafe_allow_html=True)
+    if st.button("Continue to Contribution Analysis →", type="primary", width="stretch", key="nav_to_analysis"):
+        st.switch_page("pages/4_Contribution_Analysis.py")

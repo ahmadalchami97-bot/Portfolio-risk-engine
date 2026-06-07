@@ -154,7 +154,6 @@ def render_slider(factor: str, container):
         st.markdown(
             f"**{cfg['icon']} {cfg['label']}**  \n"
             f"<span style='color:{NEU};font-size:0.82em;'>"
-            f"Baseline: **{cfg['baseline_label']}** &nbsp;|&nbsp; "
             f"Range: **{range_label}** &nbsp;|&nbsp; {cfg['example']}"
             f"</span>",
             unsafe_allow_html=True,
@@ -216,7 +215,7 @@ else:
                     label=f"{cfg['icon']} {cfg['label']}",
                     value=f"{arrow} {sign}{shock} {cfg['unit']}",
                     color=sign_color(shock),
-                    sublabel=f"Base: {cfg['baseline_label']}",
+                    sublabel="",
                 ),
                 unsafe_allow_html=True,
             )
@@ -277,7 +276,9 @@ with col_reset:
 with col_next:
     if not st.session_state.portfolio:
         st.warning("No portfolio yet — go back and add assets first.")
-        st.markdown("<a class='nav-btn' href='/Portfolio_Builder' target='_self'>← Back to Portfolio Builder</a>", unsafe_allow_html=True)
+        if st.button("← Back to Portfolio Builder", type="primary", width="stretch", key="nav_back_portfolio"):
+            st.switch_page("pages/1_Portfolio_Builder.py")
     else:
         st.markdown("**Portfolio and scenario ready?**")
-        st.markdown("<a class='nav-btn' href='/Results_Dashboard' target='_self'>Continue to Results Dashboard →</a>", unsafe_allow_html=True)
+        if st.button("Continue to Results Dashboard →", type="primary", width="stretch", key="nav_to_results"):
+            st.switch_page("pages/3_Results_Dashboard.py")

@@ -71,25 +71,6 @@ def apply_theme() -> None:
         [data-testid="stSidebarNav"] li span {{
             font-size: 0.9rem;
         }}
-
-        /* ── nav_button anchors ───────────────────────────────────── */
-        a.nav-btn {{
-            display: block;
-            width: 100%;
-            padding: 0.6rem 1.1rem;
-            background: {ACC};
-            color: #ffffff !important;
-            font-weight: 600;
-            font-size: 0.92rem;
-            border-radius: 6px;
-            text-align: center;
-            text-decoration: none !important;
-            box-sizing: border-box;
-        }}
-        a.nav-btn:hover {{
-            background: #162e4d;
-            color: #ffffff !important;
-        }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -151,14 +132,6 @@ def kpi_card(label: str, value: str, color: str = ACC, sublabel: str = "") -> st
         f"<div style='font-size:1.55rem;font-weight:700;color:{color};margin-top:4px;'>{value}</div>"
         f"{sub}"
         f"</div>"
-    )
-
-
-def nav_button(label: str, url: str) -> None:
-    """Render a navigation link styled as a navy button."""
-    st.markdown(
-        f"<a class='nav-btn' href='{url}' target='_self'>{label}</a>",
-        unsafe_allow_html=True,
     )
 
 
