@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from src.ui import apply_theme, ACC
 from src.templates import FACTORS
@@ -98,28 +99,64 @@ st.divider()
 
 st.subheader("How the Analysis Works")
 
-col_model, col_warn = st.columns([3, 2])
+st.markdown(
+    "This tool estimates how a portfolio may react under different macroeconomic scenarios.\n\n"
+    "The model uses a set of assumed economic sensitivities for each asset class. "
+    "These sensitivities are based on commonly observed market relationships and are intended "
+    "for scenario analysis rather than forecasting.\n\n"
+    "Results should be interpreted as directional estimates of potential portfolio impact "
+    "under the selected macro environment."
+)
 
-with col_model:
-    st.markdown(
-        "This tool estimates how a portfolio may react to changes in key macroeconomic "
-        "variables such as interest rates, inflation, the US dollar, and oil prices. "
-        "Each asset class is assigned a set of economic sensitivities based on typical "
-        "market behaviour. For example:\n\n"
-        "- Gold generally benefits from higher inflation and a weaker US dollar.\n"
-        "- Equities typically benefit from lower interest rates.\n"
-        "- Long-duration bonds are usually sensitive to changes in yields.\n"
-        "- Real estate can be affected by both interest rates and inflation.\n\n"
-        "The analysis should be viewed as a scenario-planning tool rather than a forecast."
-    )
+st.markdown("#### How to Read the Table")
+st.markdown(
+    "Each number below represents the estimated percentage impact on an asset for a "
+    "one-unit change in the corresponding macro factor.\n\n"
+    "**Examples:**\n\n"
+    "- Gold / Fed Funds = **−2.0** means a 1.0 percentage point increase in the Fed Funds Rate "
+    "is assumed to reduce Gold by approximately 2.0%.\n"
+    "- Gold / Inflation = **+3.0** means a 1.0 percentage point increase in Inflation "
+    "is assumed to increase Gold by approximately 3.0%.\n"
+    "- Gold / DXY = **−0.8** means a 1% increase in the US Dollar Index "
+    "is assumed to reduce Gold by approximately 0.8%.\n\n"
+    "Positive values indicate the asset generally benefits when that factor rises.  \n"
+    "Negative values indicate the asset generally faces headwinds when that factor rises."
+)
 
-with col_warn:
-    st.warning(
-        "**Important:** All factor sensitivities are **assumption-based**, "
-        "not statistically estimated from historical data. "
-        "Results are directional estimates for analytical discussion — "
-        "not investment advice or precise forecasts.\n\n"
-        "See the Assumptions & Methodology page for full disclosure.",
-        icon="⚠️",
-    )
-    st.page_link("pages/5_Assumptions.py", label="📋 View Assumptions & Methodology →")
+_sensitivity_data = {
+    "Asset Class":                         ["🥇 Gold", "📈 US Equities", "🏛️ US Treasuries", "🏠 Swiss Real Estate"],
+    "Fed Funds\n(% per +1.0pp)":           [-2.0, -3.0, -5.0, -1.5],
+    "US 10Y Yield\n(% per +1.0pp)":        [-3.0, -2.0, -8.0, -3.0],
+    "Inflation\n(% per +1.0pp)":           [+3.0, -1.5, -3.0, +2.0],
+    "DXY\n(% per +1%)":                    [-0.8, -0.3, +0.1, -0.5],
+    "Oil\n(% per +1%)":                    [+0.3, +0.2, -0.1,  0.0],
+}
+
+_sens_df = pd.DataFrame(_sensitivity_data)
+
+def _color_sens(val):
+    try:
+        f = float(val)
+        if f > 0: return "color:#059669; font-weight:600"
+        if f < 0: return "color:#dc2626; font-weight:600"
+    except (TypeError, ValueError):
+        pass
+    return ""
+
+_numeric_cols = [c for c in _sens_df.columns if c != "Asset Class"]
+_styled_sens = _sens_df.style.map(_color_sens, subset=_numeric_cols).format(
+    {c: "{:+.1f}" for c in _numeric_cols}
+)
+st.dataframe(_styled_sens, width="stretch", hide_index=True)
+
+st.markdown("#### Important Note")
+st.warning(
+    "These sensitivities are assumptions used for scenario analysis.\n\n"
+    "They are economically motivated and intended to reflect typical market behaviour, "
+    "but they are not statistically estimated from historical data and should not be "
+    "interpreted as forecasts or precise market betas.\n\n"
+    "Actual market outcomes may differ, particularly during unusual market environments "
+    "or periods when historical relationships break down.",
+    icon="⚠️",
+)
+st.page_link("pages/5_Assumptions.py", label="📋 View Assumptions & Methodology →")
