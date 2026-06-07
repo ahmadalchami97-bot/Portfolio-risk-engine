@@ -11,7 +11,6 @@ _THRESHOLDS: dict[str, tuple[float, float]] = {
     "Fed Funds Rate": (0.50, 1.50),   # pp
     "US 10Y Yield":   (0.50, 1.50),   # pp
     "Inflation":      (0.50, 1.50),   # pp
-    "GDP Growth":     (0.50, 1.50),   # pp
     "DXY":            (1.50, 4.00),   # %
     "Oil Price":      (3.00, 10.00),  # %
 }
@@ -49,7 +48,6 @@ def check_consistency(scenario: dict) -> list[str]:
     fed  = scenario.get("Fed Funds Rate", 0.0)
     y10  = scenario.get("US 10Y Yield",   0.0)
     inf_ = scenario.get("Inflation",      0.0)
-    gdp  = scenario.get("GDP Growth",     0.0)
     dxy  = scenario.get("DXY",            0.0)
     oil  = scenario.get("Oil Price",      0.0)
 
@@ -71,15 +69,7 @@ def check_consistency(scenario: dict) -> list[str]:
             "The simultaneous occurrence of sharp hikes and falling long yields is unusual."
         )
 
-    # 3. Strong GDP growth with sharply falling inflation
-    if gdp >= 0.50 and inf_ <= -0.75:
-        warnings.append(
-            "**Strong GDP growth alongside sharply falling inflation.** "
-            "Growth typically generates some price pressure. "
-            "This 'immaculate disinflation' combination is historically very rare."
-        )
-
-    # 4. Oil rising significantly with no inflation response
+    # 3. Oil rising significantly with no inflation response
     if oil >= 5.00 and abs(inf_) < 0.25:
         warnings.append(
             "**Oil rising significantly with no inflation impact modeled.** "
@@ -88,7 +78,7 @@ def check_consistency(scenario: dict) -> list[str]:
             "consider whether an inflation shock should also be applied."
         )
 
-    # 5. Dollar and oil both rising sharply
+    # 4. Dollar and oil both rising sharply
     if dxy >= 3.00 and oil >= 5.00:
         warnings.append(
             "**Dollar and oil both rising sharply.** "
@@ -96,28 +86,12 @@ def check_consistency(scenario: dict) -> list[str]:
             "Both appreciating simultaneously is historically uncommon."
         )
 
-    # 6. Fed cutting while inflation surging
+    # 5. Fed cutting while inflation surging
     if fed <= -0.75 and inf_ >= 1.50:
         warnings.append(
             "**Fed cutting rates while inflation surges.** "
             "This mirrors the 1970s policy error. "
             "Under modern central bank mandates, this combination is extremely unusual."
-        )
-
-    # 7. Severe recession with surging oil but low inflation
-    if gdp <= -2.00 and oil >= 10.00 and inf_ < 1.00:
-        warnings.append(
-            "**Severe recession with a large oil shock but low modeled inflation.** "
-            "Historical oil shocks (1973, 1979) produced both recession and high inflation. "
-            "Consider whether inflation should be shocked upward to reflect this."
-        )
-
-    # 8. GDP falling sharply while Fed hiking aggressively
-    if gdp <= -1.50 and fed >= 1.50:
-        warnings.append(
-            "**Aggressive rate hikes alongside a sharp GDP contraction.** "
-            "Central banks typically pause or reverse hiking cycles during recessions. "
-            "This combination implies a severe stagflationary policy bind."
         )
 
     return warnings

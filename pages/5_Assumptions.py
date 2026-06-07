@@ -67,9 +67,8 @@ st.markdown("""
 | Fed Funds Rate | Percentage points (pp) | +1.0 = Fed hikes 100bps |
 | US 10Y Yield | Percentage points (pp) | +0.5 = 10Y yield rises 50bps |
 | Inflation (CPI) | Percentage points (pp) | +1.0 = CPI rises from 3% to 4% |
-| GDP Growth | Percentage points (pp) | -1.0 = growth slows by 1pp |
 | DXY | % change | +5.0 = dollar strengthens 5% |
-| Oil Price (WTI) | % change | +20.0 = oil rises 20% |
+| Oil Price (WTI) | % change | +15.0 = oil rises 15% |
 """)
 
 st.divider()

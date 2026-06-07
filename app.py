@@ -1,6 +1,7 @@
 import streamlit as st
 
 from src.ui import apply_theme, ACC
+from src.templates import FACTORS
 
 st.set_page_config(
     page_title="Portfolio Risk Engine",
@@ -16,14 +17,7 @@ if "portfolio" not in st.session_state:
     st.session_state.portfolio = []
 
 if "scenario" not in st.session_state:
-    st.session_state.scenario = {
-        "Fed Funds Rate": 0.0,
-        "US 10Y Yield":   0.0,
-        "Inflation":      0.0,
-        "GDP Growth":     0.0,
-        "DXY":            0.0,
-        "Oil Price":      0.0,
-    }
+    st.session_state.scenario = {f: 0.0 for f in FACTORS}
 
 # ── Header ─────────────────────────────────────────────────────────────────────
 
@@ -53,7 +47,7 @@ with c2:
     st.markdown("**⚙️ Scenario Builder**")
     st.markdown(
         "Set shocks to six macro factors: Fed Funds Rate, US 10Y Yield, Inflation, "
-        "GDP Growth, DXY, and Oil Price. Or load a pre-built scenario template."
+        "DXY, and Oil Price. Or load a pre-built scenario template."
     )
     st.page_link("pages/2_Scenario_Builder.py", label="Open Scenario Builder →")
 
@@ -120,14 +114,14 @@ percent change (%) for DXY and Oil.
 
 **Portfolio return** is the investment-weighted average of asset returns.
 
-Four asset templates are available, each with six factor betas:
+Four asset templates are available, each with five factor betas:
 
-| Template | Fed Funds | US 10Y | Inflation | GDP | DXY | Oil |
-|---|---|---|---|---|---|---|
-| 🥇 Gold | −2.0 | −3.0 | +3.0 | −1.0 | −0.8 | +0.3 |
-| 📈 US Equities | −3.0 | −2.0 | −1.5 | +4.0 | −0.3 | +0.2 |
-| 🏛️ US Treasuries | −5.0 | −8.0 | −3.0 | −0.5 | +0.1 | −0.1 |
-| 🏠 Swiss RE | −1.5 | −3.0 | +2.0 | +2.0 | −0.5 | 0.0 |
+| Template | Fed Funds | US 10Y | Inflation | DXY | Oil |
+|---|---|---|---|---|---|
+| 🥇 Gold | −2.0 | −3.0 | +3.0 | −0.8 | +0.3 |
+| 📈 US Equities | −3.0 | −2.0 | −1.5 | −0.3 | +0.2 |
+| 🏛️ US Treasuries | −5.0 | −8.0 | −3.0 | +0.1 | −0.1 |
+| 🏠 Swiss RE | −1.5 | −3.0 | +2.0 | −0.5 | 0.0 |
 """)
 
 with col_warn:

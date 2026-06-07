@@ -90,6 +90,51 @@ def color_value(val) -> str:
     return ""
 
 
+def sign_color(val) -> str:
+    """Green for positive, red for negative, grey for zero. The single
+    source of truth for gain/loss colouring across the app."""
+    try:
+        f = float(val)
+        if f > 0:
+            return POS
+        if f < 0:
+            return NEG
+    except (TypeError, ValueError):
+        pass
+    return NEU
+
+
+def sign_arrow(val) -> str:
+    """▲ for positive, ▼ for negative, • for zero."""
+    try:
+        f = float(val)
+        if f > 0:
+            return "▲"
+        if f < 0:
+            return "▼"
+    except (TypeError, ValueError):
+        pass
+    return "•"
+
+
+def kpi_card(label: str, value: str, color: str = ACC, sublabel: str = "") -> str:
+    """Return HTML for a KPI card with a colour-controlled value.
+    Use with st.markdown(..., unsafe_allow_html=True) inside a column."""
+    sub = (
+        f"<div style='font-size:0.78rem;color:{NEU};margin-top:2px;'>{sublabel}</div>"
+        if sublabel else ""
+    )
+    return (
+        f"<div style='background:{LIGHT};border:1px solid {BORDER};border-radius:10px;"
+        f"padding:1rem 1.25rem;'>"
+        f"<div style='font-size:0.8rem;font-weight:600;text-transform:uppercase;"
+        f"letter-spacing:0.05em;color:{NEU};'>{label}</div>"
+        f"<div style='font-size:1.55rem;font-weight:700;color:{color};margin-top:4px;'>{value}</div>"
+        f"{sub}"
+        f"</div>"
+    )
+
+
 def narrative_box(text: str) -> None:
     """Render a narrative summary in a styled callout box."""
     html = text.replace("\n\n", "<br><br>").replace("\n", " ")
