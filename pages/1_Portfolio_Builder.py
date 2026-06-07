@@ -183,7 +183,7 @@ else:
         "Gold is assumed to fall by approximately 2.0%.\n\n"
         "**Positive** values mean the asset tends to move in the **same** direction as the factor.  \n"
         "**Negative** values mean the asset tends to move in the **opposite** direction.\n\n"
-        "_These are model assumptions and are not statistically estimated from historical data._"
+        "_These sensitivities are used for scenario analysis and represent typical market relationships._"
     )
 
     beta_rows = []

@@ -71,6 +71,27 @@ def apply_theme() -> None:
         [data-testid="stSidebarNav"] li span {{
             font-size: 0.9rem;
         }}
+
+        /* ── Page-link navigation buttons ────────────────────────── */
+        [data-testid="stPageLink"] a {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.55rem 1.1rem;
+            background: {ACC};
+            color: #ffffff !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            border: 1px solid {ACC};
+            text-decoration: none !important;
+            transition: background 0.15s, border-color 0.15s;
+        }}
+        [data-testid="stPageLink"] a:hover {{
+            background: #162e4d;
+            border-color: #162e4d;
+        }}
         </style>
         """,
         unsafe_allow_html=True,
