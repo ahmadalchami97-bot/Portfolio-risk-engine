@@ -72,25 +72,23 @@ def apply_theme() -> None:
             font-size: 0.9rem;
         }}
 
-        /* ── Page-link navigation buttons ────────────────────────── */
-        [data-testid="stPageLink"] a {{
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+        /* ── nav_button anchors ───────────────────────────────────── */
+        a.nav-btn {{
+            display: block;
             width: 100%;
-            padding: 0.55rem 1.1rem;
+            padding: 0.6rem 1.1rem;
             background: {ACC};
             color: #ffffff !important;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             border-radius: 6px;
-            border: 1px solid {ACC};
+            text-align: center;
             text-decoration: none !important;
-            transition: background 0.15s, border-color 0.15s;
+            box-sizing: border-box;
         }}
-        [data-testid="stPageLink"] a:hover {{
+        a.nav-btn:hover {{
             background: #162e4d;
-            border-color: #162e4d;
+            color: #ffffff !important;
         }}
         </style>
         """,
@@ -153,6 +151,14 @@ def kpi_card(label: str, value: str, color: str = ACC, sublabel: str = "") -> st
         f"<div style='font-size:1.55rem;font-weight:700;color:{color};margin-top:4px;'>{value}</div>"
         f"{sub}"
         f"</div>"
+    )
+
+
+def nav_button(label: str, url: str) -> None:
+    """Render a navigation link styled as a navy button."""
+    st.markdown(
+        f"<a class='nav-btn' href='{url}' target='_self'>{label}</a>",
+        unsafe_allow_html=True,
     )
 
 

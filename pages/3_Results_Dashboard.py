@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.templates import FACTORS
 from src.factor_model import compute_results
-from src.ui import apply_theme, POS, NEG, ACC, NEU, BORDER, LIGHT, CHART_LAYOUT, sign_color, sign_arrow, kpi_card
+from src.ui import apply_theme, POS, NEG, ACC, NEU, BORDER, LIGHT, CHART_LAYOUT, sign_color, sign_arrow, kpi_card, nav_button
 
 st.set_page_config(page_title="Results Dashboard", page_icon="📈", layout="wide")
 apply_theme()
@@ -30,13 +30,13 @@ st.divider()
 
 if not st.session_state.portfolio:
     st.warning("No portfolio defined — please build your portfolio first.")
-    st.page_link("pages/1_Portfolio_Builder.py", label="← Go to Portfolio Builder")
+    nav_button("← Go to Portfolio Builder", "/Portfolio_Builder")
     st.stop()
 
 active_shocks = {f: v for f, v in st.session_state.scenario.items() if abs(v) > 0.001}
 if not active_shocks:
     st.warning("No macro shocks are active — all factors are set to zero.")
-    st.page_link("pages/2_Scenario_Builder.py", label="← Go to Scenario Builder")
+    nav_button("← Go to Scenario Builder", "/Scenario_Builder")
     st.stop()
 
 # ── Compute ────────────────────────────────────────────────────────────────────
@@ -233,6 +233,6 @@ st.divider()
 
 col_prev, col_next = st.columns(2)
 with col_prev:
-    st.page_link("pages/2_Scenario_Builder.py", label="← Adjust Scenario")
+    nav_button("← Adjust Scenario", "/Scenario_Builder")
 with col_next:
-    st.page_link("pages/4_Contribution_Analysis.py", label="Continue to Contribution Analysis →")
+    nav_button("Continue to Contribution Analysis →", "/Contribution_Analysis")
