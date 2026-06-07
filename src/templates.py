@@ -284,9 +284,11 @@ FACTORS = {
         "label": "DXY (US Dollar Index)",
         "description": "Percentage change in US Dollar Index",
         "example": "+5.0% = dollar strengthens 5%",
-        "min": -20.0,
-        "max":  20.0,
-        "step":  1.0,
+        "min": -5.0,          # normal mode
+        "max":  5.0,
+        "min_stress": -15.0,  # stress testing mode
+        "max_stress":  15.0,
+        "step":  0.5,
         "baseline": 104.2,
         "baseline_label": "104.2",
         "icon": "💵",
@@ -296,9 +298,11 @@ FACTORS = {
         "label": "Oil Price (WTI)",
         "description": "Percentage change in WTI crude oil",
         "example": "+20.0% = oil rises 20%",
-        "min": -50.0,
-        "max":  50.0,
-        "step":  5.0,
+        "min": -5.0,          # normal mode
+        "max":  5.0,
+        "min_stress": -25.0,  # stress testing mode
+        "max_stress":  25.0,
+        "step":  1.0,
         "baseline": 78.5,
         "baseline_label": "$78.5/bbl",
         "icon": "🛢️",
